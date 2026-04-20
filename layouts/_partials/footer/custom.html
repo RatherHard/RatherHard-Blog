@@ -1,0 +1,33 @@
+<div id="particles-js"></div>
+
+<!-- 使用 Hugo 资源获取功能 -->
+<script src='{{ (resources.Get "background/particles.min.js").Permalink }}'></script>
+<script>
+    particlesJS.load('particles-js', '{{ (resources.Get "background/particlesjs-config.json").Permalink }}', function() {
+        console.log('particles.js loaded - callback');
+    });
+</script>
+
+<style>
+    #particles-js {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: -1;
+    }
+</style>
+
+<style>
+    @font-face {
+        font-family: 'MapleMonoFont';
+        src: url({{ (resources.Get "font/MapleMono-Regular.ttf.woff2").Permalink }}) format('woff2');
+    }
+
+    :root {
+        --base-font-family: 'MapleMonoFont';
+        --code-font-family: 'MapleMonoFont';
+    }
+</style>
+
+
