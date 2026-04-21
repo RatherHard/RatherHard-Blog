@@ -7,10 +7,10 @@ favicon        = "https://pic.ratherhard.com/avatar/avatar1.jpg"
 # Accepted values: "default", "lastmod"
 # default = see https://gohugo.io/quick-reference/glossary/#default-sort-order
 # lastmod = sort by last modified date, in descending order
-SortBy              = "default"
+SortBy              = "lastmod"
 
 [footer]
-    since      = 2020
+    since      = 2025
     customText = ""
 
 [dateFormat]
@@ -34,6 +34,9 @@ SortBy              = "default"
     headingAnchor = false
     math          = true
     readingTime   = true
+
+    [article.list]
+        showTags = true
 
     [article.license]
         enabled = true

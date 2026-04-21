@@ -1,0 +1,30 @@
+{{ define "body-class" }}links-page{{ end }}
+
+{{ define "main" }}
+<div class="links-container">
+    <header class="links-header">
+        <h1>{{ .Title }}</h1>
+        {{ with .Content }}<div class="links-description">{{ . }}</div>{{ end }}
+    </header>
+
+    <div class="links-grid">
+        {{ range .Params.links }}
+        <a href="{{ .website }}" target="_blank" rel="noopener" class="link-card">
+            <div class="link-card__avatar">
+                {{ with .image }}
+                    <img src="{{ . }}" alt="{{ $.Title }}" loading="lazy" />
+                {{ else }}
+                    <span class="link-card__avatar-fallback">{{ substr .title 0 1 }}</span>
+                {{ end }}
+            </div>
+            <div class="link-card__info">
+                <span class="link-card__title">{{ .title }}</span>
+                <span class="link-card__desc">{{ with .description }}{{ . }}{{ else }}{{ .website }}{{ end }}</span>
+            </div>
+        </a>
+        {{ end }}
+    </div>
+</div>
+
+{{ partialCached "footer/footer" . }}
+{{ end }}

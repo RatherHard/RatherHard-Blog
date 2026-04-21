@@ -5,17 +5,53 @@
         <description>Recent content in Categories on RatherHard の Blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-CN</language>
-        <lastBuildDate>Thu, 07 Sep 2023 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/categories/index.xml" rel="self" type="application/rss+xml" /><item>
-            <title>Syntax</title>
-            <link>http://localhost:1313/categories/syntax/</link>
-            <pubDate>Thu, 07 Sep 2023 00:00:00 +0000</pubDate>
-            <guid>http://localhost:1313/categories/syntax/</guid>
+        <lastBuildDate>Wed, 25 Mar 2026 14:04:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+            <title>Contest</title>
+            <link>http://localhost:1313/categories/contest/</link>
+            <pubDate>Wed, 25 Mar 2026 14:04:00 +0000</pubDate>
+            <guid>http://localhost:1313/categories/contest/</guid>
+            <description></description>
+        </item><item>
+            <title>Pwn 技巧</title>
+            <link>http://localhost:1313/categories/pwn-%E6%8A%80%E5%B7%A7/</link>
+            <pubDate>Tue, 10 Mar 2026 13:34:00 +0000</pubDate>
+            <guid>http://localhost:1313/categories/pwn-%E6%8A%80%E5%B7%A7/</guid>
+            <description></description>
+        </item><item>
+            <title>NSSCTF 题解</title>
+            <link>http://localhost:1313/categories/nssctf-%E9%A2%98%E8%A7%A3/</link>
+            <pubDate>Sat, 07 Mar 2026 00:58:00 +0000</pubDate>
+            <guid>http://localhost:1313/categories/nssctf-%E9%A2%98%E8%A7%A3/</guid>
+            <description></description>
+        </item><item>
+            <title>Glibc 分析</title>
+            <link>http://localhost:1313/categories/glibc-%E5%88%86%E6%9E%90/</link>
+            <pubDate>Sun, 01 Mar 2026 15:07:00 +0000</pubDate>
+            <guid>http://localhost:1313/categories/glibc-%E5%88%86%E6%9E%90/</guid>
+            <description></description>
+        </item><item>
+            <title>BUUCTF 题解</title>
+            <link>http://localhost:1313/categories/buuctf-%E9%A2%98%E8%A7%A3/</link>
+            <pubDate>Mon, 09 Feb 2026 16:54:00 +0000</pubDate>
+            <guid>http://localhost:1313/categories/buuctf-%E9%A2%98%E8%A7%A3/</guid>
+            <description></description>
+        </item><item>
+            <title>基础知识</title>
+            <link>http://localhost:1313/categories/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</link>
+            <pubDate>Mon, 29 Dec 2025 14:29:00 +0000</pubDate>
+            <guid>http://localhost:1313/categories/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</guid>
             <description></description>
         </item><item>
             <title>Themes</title>
             <link>http://localhost:1313/categories/themes/</link>
             <pubDate>Thu, 07 Sep 2023 00:00:00 +0000</pubDate>
             <guid>http://localhost:1313/categories/themes/</guid>
+            <description></description>
+        </item><item>
+            <title>Syntax</title>
+            <link>http://localhost:1313/categories/syntax/</link>
+            <pubDate>Thu, 07 Sep 2023 00:00:00 +0000</pubDate>
+            <guid>http://localhost:1313/categories/syntax/</guid>
             <description></description>
         </item><item>
             <title>Example Category</title>

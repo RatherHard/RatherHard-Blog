@@ -7,15 +7,22 @@
 
     <header>
         {{ with .Site.Params.sidebar.avatar }}
-            {{- $avatar := partial "helper/image" (dict "Image" . "Resources" resources "Context" $) -}}
             <figure class="site-avatar">
                 <a href="{{ $.Site.Home.RelPermalink }}">
-                    <img src="{{ $avatar.Permalink }}" 
-                        width="{{ $avatar.Width }}"
-                        height="{{ $avatar.Height }}"
-                        class="site-logo"
-                        loading="lazy"
-                        alt="Avatar">
+                    {{/* 检查是否是以 http 开头的远程链接 */}}
+                    {{- if (findRE "^https?://" .) -}}
+                        {{/* 如果是远程 URL，直接显示，不处理宽高 */}}
+                        <img src="{{ . }}" class="site-logo" loading="lazy" alt="Avatar">
+                    {{- else -}}
+                        {{/* 如果是本地路径，执行原有的逻辑 */}}
+                        {{- $avatar := partial "helper/image" (dict "Image" . "Resources" resources "Context" $) -}}
+                        <img src="{{ $avatar.Permalink }}" 
+                            width="{{ $avatar.Width }}"
+                            height="{{ $avatar.Height }}"
+                            class="site-logo"
+                            loading="lazy"
+                            alt="Avatar">
+                    {{- end -}}
                 </a>
                 {{ with $.Site.Params.sidebar.emoji }}
                     <span class="emoji">{{ . }}</span>
@@ -62,11 +69,18 @@
             </a>
         </li>
         {{ end }}
+        {{ if .Site.Params.colorScheme.toggle }}
+            <li id="dark-mode-toggle">
+                {{ partial "helper/icon" "toggle-left" }}
+                {{ partial "helper/icon" "toggle-right" }}
+                <span>{{ T "darkMode" }}</span>
+            </li>
+        {{ end }}
         <li class="menu-bottom-section">
             <ol class="menu">
                 {{- $currentLanguageCode := .Language.Lang -}}
                 {{ if hugo.IsMultilingual }}
-                    <li id="i18n-switch">  
+                    <li id="i18n-switch">
                         {{ partial "helper/icon" "language" }}
                         <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
                             {{ range .Site.Home.AllTranslations }}
@@ -79,14 +93,6 @@
                                 <option value="{{ $target.RelPermalink }}" {{ if eq $target.Language.Lang $currentLanguageCode }}selected{{ end }}>{{ .Language.LanguageName }}</option>
                             {{ end }}
                         </select>
-                    </li>
-                {{ end }}
-
-                {{ if .Site.Params.colorScheme.toggle }}
-                    <li id="dark-mode-toggle">
-                        {{ partial "helper/icon" "toggle-left" }}
-                        {{ partial "helper/icon" "toggle-right" }}
-                        <span>{{ T "darkMode" }}</span>
                     </li>
                 {{ end }}
             </ol>

