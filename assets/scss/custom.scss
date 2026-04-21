@@ -1,10 +1,58 @@
 /*
     You can add your own custom styles here.
 */
+
+.main {
+    // 增加底部的留白，让页面看起来更从容
+    padding-bottom: 3rem; 
+
+    @include respond(md) {
+        padding-bottom: 6rem; // 电脑端可以留白更多
+    }
+}
+
+.home-terminal {
+    background: var(--card-background);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--shadow-l2);
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(110, 68, 255, 0.15);
+
+    &__body {
+        padding: 24px 28px;
+        font-family: var(--code-font-family);
+        font-size: 1.8rem;
+        color: var(--card-text-color-main);
+        min-height: 3em;
+        display: flex;
+        align-items: center;
+    }
+
+    &__prompt {
+        color: #28c840;
+        user-select: none;
+    }
+
+    &__text {
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+
+    &__cursor {
+        animation: terminal-blink 1s step-end infinite;
+        color: var(--accent-color);
+        font-weight: bold;
+    }
+}
+
+@keyframes terminal-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
 @media (min-width: 1024px) {
     .article-list--compact {
         display: grid;
-        // 目前是两列，如需三列，则后面再加一个1fr，以此类推
         grid-template-columns: 1fr 1fr 1fr;
         background: none;
         box-shadow: none;
@@ -19,28 +67,13 @@
             border-radius: 16px;
         }
     }
-}
 
-html {
-    &[data-scheme="dark"] {
-        --body-background: #0f1017 !important; //修改这里即可
-        --accent-color: #ecf0f1;
-        --accent-color-darker: #bdc3c7;
-        --accent-color-text: #000;
-        --body-text-color: rgba(255, 255, 255, 0.7);
-        --scrollbar-thumb: hsl(0, 0%, 40%);
-        --scrollbar-track: var(--body-background);
-    }
-    &[data-scheme="dark"] {
-        --card-background: #1e2d44 !important; //这里也要相应的修改
-        --card-background-selected: rgba(255, 255, 255, 0.16);
-        --card-text-color-main: rgba(255, 255, 255, 0.9);
-        --card-text-color-secondary: rgba(255, 255, 255, 0.7);
-        --card-text-color-tertiary: rgba(255, 255, 255, 0.5);
-        --card-separator-color: rgba(255, 255, 255, 0.12);
+    .article-list--home-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem;
     }
 }
-
 
 .highlight {
     max-width: 102% !important;

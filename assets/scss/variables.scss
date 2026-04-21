@@ -15,16 +15,18 @@
     --accent-color-text: #fff;
     --body-text-color: #707070;
 
-    --tag-border-radius: 4px;
+    --tag-border-radius: 10px;
 
     --section-separation: 40px;
 
     &[data-scheme="dark"] {
-        --body-background: #303030;
+        --body-background: #0f1017;
         --accent-color: #ecf0f1;
         --accent-color-darker: #bdc3c7;
         --accent-color-text: #000;
         --body-text-color: rgba(255, 255, 255, 0.7);
+        --scrollbar-thumb: hsl(0, 0%, 40%);
+        --scrollbar-track: var(--body-background);
     }
 }
 
@@ -49,7 +51,7 @@
     --card-text-color-tertiary: #767676;
     --card-separator-color: rgba(218, 218, 218, 0.5);
 
-    --card-border-radius: 10px;
+    --card-border-radius: 20px;
 
     --card-padding: 20px;
 
@@ -68,7 +70,7 @@
     }
 
     &[data-scheme="dark"] {
-        --card-background: #424242;
+        --card-background: #1e2d44;
         --card-background-selected: rgba(255, 255, 255, 0.16);
         --card-text-color-main: rgba(255, 255, 255, 0.9);
         --card-text-color-secondary: rgba(255, 255, 255, 0.7);

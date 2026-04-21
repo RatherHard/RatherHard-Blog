@@ -2,7 +2,7 @@
 <html lang="zh-CN" dir="ltr">
     <head>
 	<meta name="generator" content="Hugo 0.160.1"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="路漫漫其修远兮，吾将上下而求索">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="路漫漫其修远兮">
 <title>RatherHard の Blog</title>
 
 
@@ -13,22 +13,23 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
 
 
-<link rel="stylesheet" href="/scss/style.min.98fecc4ca1981ba62880cbd328de0e9aa566fa4c49e71892e5aecff2d746ba74.css"><meta property='og:title' content="RatherHard の Blog">
-<meta property='og:description' content="路漫漫其修远兮，吾将上下而求索">
+<link rel="stylesheet" href="/scss/style.min.55eefbcccddb4dda8d489b3940a1ad75a019d64ffd33b764078ba10356aa290a.css"><meta property='og:title' content="RatherHard の Blog">
+<meta property='og:description' content="路漫漫其修远兮">
 <meta property='og:url' content='http://localhost:1313/'>
 <meta property='og:site_name' content='RatherHard の Blog'>
 <meta property='og:type' content='website'><meta property='og:updated_time' content=' 2023-09-07T00:00:00&#43;00:00 '/>
 <meta name="twitter:title" content="RatherHard の Blog">
-<meta name="twitter:description" content="路漫漫其修远兮，吾将上下而求索"><link rel="alternate" type="application/rss&#43;xml" href="http://localhost:1313/index.xml">
-    <link rel="shortcut icon" href="/img/favicon.png" />
+<meta name="twitter:description" content="路漫漫其修远兮"><link rel="alternate" type="application/rss&#43;xml" href="http://localhost:1313/index.xml">
+    <link rel="shortcut icon" href="" />
 
+        <script src="https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
     </head>
-    <body class="">
+    <body class="template-home">
     <script>
         (function() {
             const colorSchemeKey = 'StackColorScheme';
             if(!localStorage.getItem(colorSchemeKey)){
-                localStorage.setItem(colorSchemeKey, "auto");
+                localStorage.setItem(colorSchemeKey, "dark");
             }
         })();
     </script><script>
@@ -56,9 +57,9 @@
     <header>
         <figure class="site-avatar">
                 <a href="/">
-                    <img src="/img/avatar.png" 
-                        width="300"
-                        height="300"
+                    <img src="" 
+                        width=""
+                        height=""
                         class="site-logo"
                         loading="lazy"
                         alt="Avatar">
@@ -71,7 +72,7 @@
         
         <div class="site-meta">
             <h1 class="site-name"><a href="/">RatherHard の Blog</a></h1>
-            <h2 class="site-description">路漫漫其修远兮，吾将上下而求索</h2>
+            <h2 class="site-description">路漫漫其修远兮</h2>
         </div>
     </header><ol class="menu-social">
             
@@ -197,9 +198,64 @@
     </ol>
 </aside>
 
+            <main class="main full-width">
+    <div class="home-terminal">
+        <div class="home-terminal__body">
+            <span class="home-terminal__prompt">RatherHard$&nbsp;</span><span class="home-terminal__text" id="terminal-text"></span><span class="home-terminal__cursor">|</span>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const prompts = ["Life is pwnable, but not hackable.","OwO?!","awmc","XwX"];
+        const el = document.getElementById('terminal-text');
+        let current = '';
+        let charIndex = 0;
+        let isDeleting = false;
+        let timeoutId = null;
+
+        function pickRandom() {
+            let next;
+            do {
+                next = prompts[Math.floor(Math.random() * prompts.length)];
+            } while (next === current && prompts.length > 1);
+            return next;
+        }
+
+        function tick() {
+            if (!isDeleting) {
+                charIndex++;
+                el.textContent = current.slice(0, charIndex);
+                if (charIndex >= current.length) {
+                    isDeleting = true;
+                    timeoutId = setTimeout(tick, 2000);
+                } else {
+                    timeoutId = setTimeout(tick, 100 + Math.random() * 60);
+                }
+            } else {
+                charIndex--;
+                el.textContent = current.slice(0, charIndex);
+                if (charIndex <= 0) {
+                    isDeleting = false;
+                    current = pickRandom();
+                    timeoutId = setTimeout(tick, 500);
+                } else {
+                    timeoutId = setTimeout(tick, 50);
+                }
+            }
+        }
+
+        current = pickRandom();
+        tick();
+    })();
+    </script>
+
+    
+    
+    
     
 
-            <main class="main full-width"><section class="article-list">
+    <section class="article-list article-list--home-grid">
         
             
 <article class="has-image">
@@ -257,25 +313,21 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                    <time class="article-time--published" datetime='2022-03-06T00:00:00Z'>Sunday, March 6, 2022</time>
-                
-
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-                    <time class="article-time--reading">
-                        
+                    <time class="article-time--published" datetime='2022-03-06T00:00:00Z'>2022-03-06 00:00</time>
+                    <time class="article-time--lastUpdated" datetime='2022-03-06T00:00:00Z'>
+                        于2022-03-06 00:00更新
                     </time>
                 
-            </div>
-        
 
+                | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-pencil">
+  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+  <path d="m15 5 4 4"/>
+</svg>
+
+                <time class="article-time--counts">
+                    41 字
+                </time>
+            </div>
         
 
         
@@ -343,25 +395,21 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                    <time class="article-time--published" datetime='2023-09-07T00:00:00Z'>Thursday, September 7, 2023</time>
-                
-
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-                    <time class="article-time--reading">
-                        
+                    <time class="article-time--published" datetime='2023-09-07T00:00:00Z'>2023-09-07 00:00</time>
+                    <time class="article-time--lastUpdated" datetime='2023-09-07T00:00:00Z'>
+                        于2023-09-07 00:00更新
                     </time>
                 
-            </div>
-        
 
+                | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-pencil">
+  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+  <path d="m15 5 4 4"/>
+</svg>
+
+                <time class="article-time--counts">
+                    543 字
+                </time>
+            </div>
         
 
         
@@ -417,25 +465,21 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                    <time class="article-time--published" datetime='2023-08-26T00:00:00Z'>Saturday, August 26, 2023</time>
-                
-
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-                    <time class="article-time--reading">
-                        
+                    <time class="article-time--published" datetime='2023-08-26T00:00:00Z'>2023-08-26 00:00</time>
+                    <time class="article-time--lastUpdated" datetime='2023-08-26T00:00:00Z'>
+                        于2023-08-26 00:00更新
                     </time>
                 
-            </div>
-        
 
+                | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-pencil">
+  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+  <path d="m15 5 4 4"/>
+</svg>
+
+                <time class="article-time--counts">
+                    73 字
+                </time>
+            </div>
         
 
         
@@ -491,25 +535,21 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                    <time class="article-time--published" datetime='2023-08-25T00:00:00Z'>Friday, August 25, 2023</time>
-                
-
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-                    <time class="article-time--reading">
-                        
+                    <time class="article-time--published" datetime='2023-08-25T00:00:00Z'>2023-08-25 00:00</time>
+                    <time class="article-time--lastUpdated" datetime='2023-08-25T00:00:00Z'>
+                        于2023-08-25 00:00更新
                     </time>
                 
-            </div>
-        
 
+                | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-pencil">
+  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+  <path d="m15 5 4 4"/>
+</svg>
+
+                <time class="article-time--counts">
+                    114 字
+                </time>
+            </div>
         
 
         
@@ -559,25 +599,21 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                    <time class="article-time--published" datetime='2023-08-24T00:00:00Z'>Thursday, August 24, 2023</time>
-                
-
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-                    <time class="article-time--reading">
-                        
+                    <time class="article-time--published" datetime='2023-08-24T00:00:00Z'>2023-08-24 00:00</time>
+                    <time class="article-time--lastUpdated" datetime='2023-08-24T00:00:00Z'>
+                        于2023-08-24 00:00更新
                     </time>
                 
-            </div>
-        
 
+                | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-pencil">
+  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+  <path d="m15 5 4 4"/>
+</svg>
+
+                <time class="article-time--counts">
+                    113 字
+                </time>
+            </div>
         
 
         
@@ -597,12 +633,51 @@
         2026 RatherHard の Blog
     </section>
     
-    <section class="powerby">
-         <br />
-        
+    <section class="running-time">
+        本博客已稳定运行
+        <span id="runningdays" class="running-days"></span>
     </section>
-</footer>
 
+      
+    <section class="totalcount">
+        
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+        
+        发表了5篇文章 ·
+        总计884字
+    </section>
+
+    <section class="powerby">
+        
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="4.0.0">Stack</a></b> 设计自 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+
+    
+    <script>
+        let s1 = '2025-10-22'; 
+        s1 = new Date(s1.replace(/-/g, "/"));
+        let s2 = new Date();
+        let timeDifference = s2.getTime() - s1.getTime();
+
+        let days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+
+        let result = days + "天" + hours + "小时" + minutes + "分钟";
+        document.getElementById('runningdays').innerHTML = result;
+    </script>
+</footer>
             </main>
         </div>
         
@@ -623,6 +698,7 @@
         top: 0;
         left: 0;
         width: 100%;
+        height: 100%;
         z-index: -1;
     }
 </style>
@@ -630,7 +706,7 @@
 <style>
     @font-face {
         font-family: 'MapleMonoFont';
-        src: url(http://localhost:1313/font/MapleMono-Regular.ttf.woff2) format('woff2');
+        src: url(http://localhost:1313/font/MapleMono-NF-CN-Regular.woff2) format('woff2');
     }
 
     :root {
@@ -642,5 +718,35 @@
 
 
 
+
+
+
+        <button id="back-to-top" class="back-to-top" type="button" aria-label="返回顶部">
+            <span class="back-to-top__progress" aria-hidden="true"></span>
+            <span class="back-to-top__inner" aria-hidden="true"></span>
+        </button>
+        <script>
+            const backToTopButton = document.getElementById('back-to-top');
+            function updateBackToTop() {
+                const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+
+                backToTopButton.style.setProperty('--scroll-progress', progress.toFixed(4));
+
+                if (scrollTop > 110) {
+                    backToTopButton.style.display = 'inline-flex';
+                } else {
+                    backToTopButton.style.display = 'none';
+                }
+            }
+
+            window.addEventListener('scroll', updateBackToTop, { passive: true });
+            updateBackToTop();
+
+            backToTopButton.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        </script>
     </body>
 </html>

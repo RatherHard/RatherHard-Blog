@@ -8,6 +8,22 @@
         {{ now.Format "2006" }} {{ default .Site.Title .Site.Copyright }}
     </section>
     
+    <section class="running-time">
+        本博客已稳定运行
+        <span id="runningdays" class="running-days"></span>
+    </section>
+
+      <!-- Add total page and word count time -->
+    <section class="totalcount">
+        {{$scratch := newScratch}}
+        {{ range (where .Site.RegularPages "Section" "post")}}
+            {{$scratch.Add "total" .WordCount}}
+        {{ end }}
+        {{ $totalWords := $scratch.Get "total" }}
+        发表了{{ len (where .Site.RegularPages "Section" "post") }}篇文章 ·
+        总计{{ $totalWords }}字
+    </section>
+
     <section class="powerby">
         {{ with .Site.Params.footer.customText }}
             {{ . | safeHTML }} <br/>
@@ -17,7 +33,23 @@
         {{- $Theme := printf `<b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="%s">Stack</a></b>` $ThemeVersion -}}
         {{- $DesignedBy := `<a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>` -}}
 
-        {{ T "footer.builtWith" (dict "Generator" $Generator) | safeHTML }} <br />
-        {{ T "footer.designedBy" (dict "Theme" $Theme "DesignedBy" $DesignedBy) | safeHTML }}
+        {{/* 直接写死文字，并通过 safeHTML 渲染链接变量 */}}
+        使用 {{ $Generator | safeHTML }} 构建 <br />
+        主题 {{ $Theme | safeHTML }} 设计自 {{ $DesignedBy | safeHTML }}
     </section>
+
+    <!-- Add blog running time -->
+    <script>
+        let s1 = '2025-10-22'; //website start date
+        s1 = new Date(s1.replace(/-/g, "/"));
+        let s2 = new Date();
+        let timeDifference = s2.getTime() - s1.getTime();
+
+        let days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+
+        let result = days + "天" + hours + "小时" + minutes + "分钟";
+        document.getElementById('runningdays').innerHTML = result;
+    </script>
 </footer>

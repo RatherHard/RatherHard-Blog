@@ -1,0 +1,90 @@
+// 变量定义
+$btt-size: 70px;
+$btt-inner-size: $btt-size - 15px; // 内部图标圆的大小（要比底圆小，形成层次）
+$btt-bg-bottom: #32435c;      // 底层圆形的颜色
+$btt-sector-color: #5175f6;   // 扇形进度的颜色
+$btt-inner-bg: #0c192c;       // 图标圆的背景色
+$btt-icon-color: #cbd1d7;     // 图标颜色
+$btt-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+
+.back-to-top {
+    // 基础容器
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    width: $btt-size;
+    height: $btt-size;
+    z-index: 1000;
+    background-color: $btt-bg-bottom;
+    
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    outline: none;
+    overflow: hidden; // 确保扇形不溢出
+    
+    // JS 默认逻辑
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    
+    // 阴影和动画
+    box-shadow: $btt-shadow;
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+    }
+
+    // 1. 扇形层（利用 conic-gradient 实现饼图效果）
+    &__progress {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        // 背景由底色和动态扇形组成
+        background: conic-gradient(
+            $btt-sector-color calc((var(--scroll-progress, 0) + 0.01) * 100%),
+            $btt-bg-bottom 0
+        );
+        z-index: 1;
+    }
+
+    // 2. 内部圆形图标层（叠加在扇形之上）
+    &__inner {
+        position: relative;
+        z-index: 2;
+        width: $btt-inner-size;
+        height: $btt-inner-size;
+        background-color: $btt-inner-bg;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        // SVG 图标配置
+        &::before {
+            content: "";
+            width: 25px;
+            height: 25px;
+            background-color: $btt-icon-color;
+            
+            // 引用你的 assets/icons/backTop.svg
+            // 确保该文件在 static/icons/ 目录下
+            -webkit-mask-image: url("/icons/backTop.svg");
+            mask-image: url("/icons/backTop.svg");
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            
+            transition: background-color 0.2s;
+        }
+    }
+
+    // 悬停时图标变色
+    &:hover &__inner::before {
+        background-color: $btt-sector-color;
+    }
+}

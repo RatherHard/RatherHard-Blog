@@ -4,6 +4,13 @@
             <h2 class="article-title">
                 {{- .Title -}}
             </h2>
+
+            <!-- 显示文章副标题 -->
+            {{ with .Params.description }}
+            <div class="article-subtitle">
+                {{ . }}
+            </div>
+            {{ end }}
             
             {{- $description := .Params.description -}}
             {{- $IsTerm := in .Kind "term" -}}

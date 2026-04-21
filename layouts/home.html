@@ -1,16 +1,68 @@
-{{ define "main" }}
-    {{- $paginator := partial "helper/paginator.html" . -}}
+{{ define "body-class" }}template-home{{ end }}
 
-    <section class="article-list">
-        {{ range $index, $element := $paginator.Pages }}
+{{ define "main" }}
+    <div class="home-terminal">
+        <div class="home-terminal__body">
+            <span class="home-terminal__prompt">RatherHard$&nbsp;</span><span class="home-terminal__text" id="terminal-text"></span><span class="home-terminal__cursor">|</span>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const prompts = {{ .Site.Params.homeTerminal.prompts }};
+        const el = document.getElementById('terminal-text');
+        let current = '';
+        let charIndex = 0;
+        let isDeleting = false;
+        let timeoutId = null;
+
+        function pickRandom() {
+            let next;
+            do {
+                next = prompts[Math.floor(Math.random() * prompts.length)];
+            } while (next === current && prompts.length > 1);
+            return next;
+        }
+
+        function tick() {
+            if (!isDeleting) {
+                charIndex++;
+                el.textContent = current.slice(0, charIndex);
+                if (charIndex >= current.length) {
+                    isDeleting = true;
+                    timeoutId = setTimeout(tick, 2000);
+                } else {
+                    timeoutId = setTimeout(tick, 100 + Math.random() * 60);
+                }
+            } else {
+                charIndex--;
+                el.textContent = current.slice(0, charIndex);
+                if (charIndex <= 0) {
+                    isDeleting = false;
+                    current = pickRandom();
+                    timeoutId = setTimeout(tick, 500);
+                } else {
+                    timeoutId = setTimeout(tick, 50);
+                }
+            }
+        }
+
+        current = pickRandom();
+        tick();
+    })();
+    </script>
+
+    {{ $pages := where .Site.RegularPages "Type" "in" .Site.Params.mainSections }}
+    {{ $notHidden := where .Site.RegularPages "Params.hidden" "!=" true }}
+    {{ $filtered := ($pages | intersect $notHidden) }}
+    {{ $pag := .Paginate ($filtered) }}
+
+    <section class="article-list article-list--home-grid">
+        {{ range $pag.Pages }}
             {{ partial "article-list/default" . }}
         {{ end }}
     </section>
 
     {{- partial "pagination.html" . -}}
     {{- partial "footer/footer" . -}}
-{{ end }}
-
-{{ define "right-sidebar" }}
-    {{ partial "sidebar/right.html" (dict "Context" . "Scope" "homepage") }}
 {{ end }}

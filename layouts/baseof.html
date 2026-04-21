@@ -3,6 +3,7 @@
     <head>
         {{- partial "head/head.html" . -}}
         {{- block "head" . -}}{{ end }}
+        <script src="https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
     </head>
     <body class="{{ block `body-class` . }}{{ end }}">
         {{- partial "head/colorScheme" . -}}
@@ -24,5 +25,33 @@
             </main>
         </div>
         {{ partial "footer/include.html" . }}
+
+        <button id="back-to-top" class="back-to-top" type="button" aria-label="返回顶部">
+            <span class="back-to-top__progress" aria-hidden="true"></span>
+            <span class="back-to-top__inner" aria-hidden="true"></span>
+        </button>
+        <script>
+            const backToTopButton = document.getElementById('back-to-top');
+            function updateBackToTop() {
+                const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+
+                backToTopButton.style.setProperty('--scroll-progress', progress.toFixed(4));
+
+                if (scrollTop > 110) {
+                    backToTopButton.style.display = 'inline-flex';
+                } else {
+                    backToTopButton.style.display = 'none';
+                }
+            }
+
+            window.addEventListener('scroll', updateBackToTop, { passive: true });
+            updateBackToTop();
+
+            backToTopButton.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        </script>
     </body>
 </html>

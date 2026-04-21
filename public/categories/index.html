@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN" dir="ltr">
     <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="路漫漫其修远兮，吾将上下而求索">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="路漫漫其修远兮">
 <title>Categories</title>
 
 
@@ -12,22 +12,23 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap">
 
 
-<link rel="stylesheet" href="/scss/style.min.98fecc4ca1981ba62880cbd328de0e9aa566fa4c49e71892e5aecff2d746ba74.css"><meta property='og:title' content="Categories">
-<meta property='og:description' content="路漫漫其修远兮，吾将上下而求索">
+<link rel="stylesheet" href="/scss/style.min.55eefbcccddb4dda8d489b3940a1ad75a019d64ffd33b764078ba10356aa290a.css"><meta property='og:title' content="Categories">
+<meta property='og:description' content="路漫漫其修远兮">
 <meta property='og:url' content='http://localhost:1313/categories/'>
 <meta property='og:site_name' content='RatherHard の Blog'>
 <meta property='og:type' content='website'><meta property='og:updated_time' content=' 2023-09-07T00:00:00&#43;00:00 '/>
 <meta name="twitter:title" content="Categories">
-<meta name="twitter:description" content="路漫漫其修远兮，吾将上下而求索"><link rel="alternate" type="application/rss&#43;xml" href="http://localhost:1313/categories/index.xml">
-    <link rel="shortcut icon" href="/img/favicon.png" />
+<meta name="twitter:description" content="路漫漫其修远兮"><link rel="alternate" type="application/rss&#43;xml" href="http://localhost:1313/categories/index.xml">
+    <link rel="shortcut icon" href="" />
 
+        <script src="https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0/dist/autoload.js"></script>
     </head>
     <body class="">
     <script>
         (function() {
             const colorSchemeKey = 'StackColorScheme';
             if(!localStorage.getItem(colorSchemeKey)){
-                localStorage.setItem(colorSchemeKey, "auto");
+                localStorage.setItem(colorSchemeKey, "dark");
             }
         })();
     </script><script>
@@ -55,9 +56,9 @@
     <header>
         <figure class="site-avatar">
                 <a href="/">
-                    <img src="/img/avatar.png" 
-                        width="300"
-                        height="300"
+                    <img src="" 
+                        width=""
+                        height=""
                         class="site-logo"
                         loading="lazy"
                         alt="Avatar">
@@ -70,7 +71,7 @@
         
         <div class="site-meta">
             <h1 class="site-name"><a href="/">RatherHard の Blog</a></h1>
-            <h2 class="site-description">路漫漫其修远兮，吾将上下而求索</h2>
+            <h2 class="site-description">路漫漫其修远兮</h2>
         </div>
     </header><ol class="menu-social">
             
@@ -222,6 +223,9 @@
     <a href="/categories/syntax/">
         <div class="article-details">
             <h2 class="article-title">Syntax</h2>
+
+            
+            
                 <footer class="article-meta"><span class="article-description"></span>
                 </footer></div>
     </a>
@@ -231,6 +235,9 @@
     <a href="/categories/themes/">
         <div class="article-details">
             <h2 class="article-title">Themes</h2>
+
+            
+            
                 <footer class="article-meta"><span class="article-description"></span>
                 </footer></div>
     </a>
@@ -240,6 +247,13 @@
     <a href="/categories/example-category/">
         <div class="article-details">
             <h2 class="article-title">Example Category</h2>
+
+            
+            
+            <div class="article-subtitle">
+                A description of this category
+            </div>
+            
                 <footer class="article-meta"><span class="article-description">A description of this category</span>
                 </footer></div>
     </a>
@@ -255,12 +269,51 @@
         2026 RatherHard の Blog
     </section>
     
-    <section class="powerby">
-         <br />
-        
+    <section class="running-time">
+        本博客已稳定运行
+        <span id="runningdays" class="running-days"></span>
     </section>
-</footer>
 
+      
+    <section class="totalcount">
+        
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+        
+        发表了5篇文章 ·
+        总计884字
+    </section>
+
+    <section class="powerby">
+        
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="4.0.0">Stack</a></b> 设计自 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+
+    
+    <script>
+        let s1 = '2025-10-22'; 
+        s1 = new Date(s1.replace(/-/g, "/"));
+        let s2 = new Date();
+        let timeDifference = s2.getTime() - s1.getTime();
+
+        let days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+
+        let result = days + "天" + hours + "小时" + minutes + "分钟";
+        document.getElementById('runningdays').innerHTML = result;
+    </script>
+</footer>
 
             </main>
         </div>
@@ -282,6 +335,7 @@
         top: 0;
         left: 0;
         width: 100%;
+        height: 100%;
         z-index: -1;
     }
 </style>
@@ -289,7 +343,7 @@
 <style>
     @font-face {
         font-family: 'MapleMonoFont';
-        src: url(http://localhost:1313/font/MapleMono-Regular.ttf.woff2) format('woff2');
+        src: url(http://localhost:1313/font/MapleMono-NF-CN-Regular.woff2) format('woff2');
     }
 
     :root {
@@ -301,5 +355,35 @@
 
 
 
+
+
+
+        <button id="back-to-top" class="back-to-top" type="button" aria-label="返回顶部">
+            <span class="back-to-top__progress" aria-hidden="true"></span>
+            <span class="back-to-top__inner" aria-hidden="true"></span>
+        </button>
+        <script>
+            const backToTopButton = document.getElementById('back-to-top');
+            function updateBackToTop() {
+                const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+
+                backToTopButton.style.setProperty('--scroll-progress', progress.toFixed(4));
+
+                if (scrollTop > 110) {
+                    backToTopButton.style.display = 'inline-flex';
+                } else {
+                    backToTopButton.style.display = 'none';
+                }
+            }
+
+            window.addEventListener('scroll', updateBackToTop, { passive: true });
+            updateBackToTop();
+
+            backToTopButton.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        </script>
     </body>
 </html>
