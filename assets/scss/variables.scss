@@ -8,6 +8,7 @@
         --main-top-padding: 50px;
     }
 
+    --card-opacity: 1;
     --body-background: #f5f5fa;
 
     --accent-color: #34495e;
@@ -21,7 +22,7 @@
 
     &[data-scheme="dark"] {
         --body-background: #0f1017;
-        --accent-color: #ecf0f1;
+        --card-background: rgba(30, 45, 68, var(--card-opacity));        --accent-color: #ecf0f1;
         --accent-color-darker: #bdc3c7;
         --accent-color-text: #000;
         --body-text-color: rgba(255, 255, 255, 0.7);
@@ -43,7 +44,7 @@
 *   Card style
 */
 :root {
-    --card-background: #fff;
+    --card-background: rgba(255, 255, 255, var(--card-opacity));
     --card-background-selected: #eaeaea;
 
     --card-text-color-main: #000;
@@ -70,7 +71,7 @@
     }
 
     &[data-scheme="dark"] {
-        --card-background: #1e2d44;
+        --card-background: rgba(30, 45, 68, var(--card-opacity));
         --card-background-selected: rgba(255, 255, 255, 0.16);
         --card-text-color-main: rgba(255, 255, 255, 0.9);
         --card-text-color-secondary: rgba(255, 255, 255, 0.7);
@@ -223,8 +224,10 @@
     --article-tile-height: 150px;
     --article-tile-overlay-bg: rgba(0, 0, 0, 0.25);
     --article-tile-text-color: #fff;
+    --article-tile-title-backdrop: rgba(0, 0, 0, 0.45);
 
     &[data-scheme="dark"] {
         --article-tile-overlay-bg: rgba(0, 0, 0, 0.45);
+        --article-tile-title-backdrop: rgba(0, 0, 0, 0.55);
     }
 }

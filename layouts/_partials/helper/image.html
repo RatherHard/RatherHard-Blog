@@ -11,9 +11,14 @@
 
 {{ $result := dict }}
 
-{{ if .Image }}
-    {{ $url := urls.Parse .Image }}
-    {{ $permalink := .Image }}
+{{ $imageURL := .Image }}
+{{ if not $imageURL }}
+    {{ $imageURL = partial "helper/random-image" .Context }}
+{{ end }}
+
+{{ if $imageURL }}
+    {{ $url := urls.Parse $imageURL }}
+    {{ $permalink := $imageURL }}
     {{ $resource := dict
         "Resource" nil
         "Permalink" $permalink
@@ -24,7 +29,7 @@
 
     {{ if not (in (slice "https" "http") $url.Scheme) }}
         {{/* Local image */}}
-        {{ $resource = .Resources.Get (printf "%s" (.Image | safeURL)) }}
+        {{ $resource = .Resources.Get (printf "%s" ($imageURL | safeURL)) }}
     {{ else }}
         {{/* Remote image */}}
         {{ with try (resources.GetRemote $url (dict "timeout" .Context.Site.Params.imageProcessing.external.timeout)) }}

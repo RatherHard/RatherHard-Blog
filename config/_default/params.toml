@@ -7,7 +7,7 @@ favicon        = "https://pic.ratherhard.com/avatar/avatar1.jpg"
 # Accepted values: "default", "lastmod"
 # default = see https://gohugo.io/quick-reference/glossary/#default-sort-order
 # lastmod = sort by last modified date, in descending order
-SortBy              = "lastmod"
+SortBy              = "default"
 
 [footer]
     since      = 2025
@@ -30,6 +30,10 @@ SortBy              = "lastmod"
     subtitle = "路漫漫其修远兮"
     avatar   = "https://pic.ratherhard.com/avatar/avatar1.jpg"
 
+[randomImage]
+    baseURL = "https://pic.ratherhard.com/random/"
+    count   = 4
+
 [article]
     headingAnchor = false
     math          = true
@@ -50,6 +54,12 @@ SortBy              = "lastmod"
     #     { type = "tag-cloud", params = { limit = 10 } },
     # ]
     page = [{ type = "toc" }]
+
+[background]
+    image       = "https://pic.ratherhard.com/background/kaguya.jpg"
+    opacity     = 0.15
+    fixed       = true
+    cardOpacity = 0.60
 
 [colorScheme]
     toggle  = true

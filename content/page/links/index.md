@@ -1,6 +1,7 @@
 ---
 title: 友情链接
-layout: links
+layout: "links"
+slug: "links"
 links:
   - title: briteny-pwn's blog
     website: https://briteny-pwn.github.io/

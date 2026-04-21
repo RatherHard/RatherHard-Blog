@@ -5,7 +5,7 @@ tags:
     - pwn
     - ret2gets
     - glibc
-categories: glibc 分析
+categories: glibc-analyse
 ---
 ## 重要结构
 

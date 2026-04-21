@@ -1,0 +1,16 @@
+{{- $Page := . -}}
+{{- $result := "" -}}
+{{- with $Page.Site.Params.randomImage -}}
+    {{- $count := .count | int -}}
+    {{- if gt $count 0 -}}
+        {{- $seed := printf "%s|%s" $Page.Title ($Page.Date.Format "2006-01-02T15:04:05") -}}
+        {{- $hash := crypto.MD5 $seed -}}
+        {{- $hexMap := dict "0" 0 "1" 1 "2" 2 "3" 3 "4" 4 "5" 5 "6" 6 "7" 7 "8" 8 "9" 9 "a" 10 "b" 11 "c" 12 "d" 13 "e" 14 "f" 15 -}}
+        {{- $c1 := substr $hash 0 1 -}}
+        {{- $c2 := substr $hash 1 1 -}}
+        {{- $num := add (mul (index $hexMap $c1) 16) (index $hexMap $c2) -}}
+        {{- $index := add (mod $num $count) 1 -}}
+        {{- $result = printf "%srd%d.png" .baseURL $index -}}
+    {{- end -}}
+{{- end -}}
+{{- return $result -}}

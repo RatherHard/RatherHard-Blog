@@ -1,0 +1,23 @@
+{{ with .Site.Params.background }}
+<style>
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background: url('{{ .image }}') center/cover no-repeat;
+    {{ if .fixed }}background-attachment: fixed;{{ end }}
+    opacity: {{ default 0.15 .opacity }};
+    pointer-events: none;
+}
+
+{{ with .cardOpacity }}
+:root {
+    --card-opacity: {{ . }};
+}
+{{ end }}
+</style>
+{{ end }}

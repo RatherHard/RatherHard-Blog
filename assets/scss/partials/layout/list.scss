@@ -66,10 +66,23 @@
             .article-title {
                 margin: 0;
                 font-size: 1.8rem;
+                position: relative;
             }
 
             .article-details {
                 padding: var(--spacing-lg);
+            }
+
+            &.has-image .article-details::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                height: 50%;
+                background: linear-gradient(to top, var(--article-tile-title-backdrop), transparent);
+                border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
+                pointer-events: none;
             }
         }
     }
