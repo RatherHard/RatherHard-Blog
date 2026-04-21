@@ -1,0 +1,43 @@
+name: Deploy Hugo Blog
+
+on:
+  push:
+    branches:
+      - main  # 确保这里匹配你的主分支名称（main 或 master）
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取仓库代码
+      # 注意：fetch-depth: 0 是为了让 Hugo 能够获取 Git 修改时间作为文章最后更新时间
+      # submodules: recursive 是因为很多 Hugo 主题是以 Git Submodule 形式存在的
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      # 2. 安装 Hugo 环境
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true # 设置为 true 以支持许多主题需要的 SCSS/SASS 编译
+
+      # 3. 执行 Hugo 构建
+      # 构建后的静态文件会生成在项目根目录下的 /public 文件夹中
+      - name: Build Site
+        run: hugo --minify
+
+      # 4. 将生成的 /public 目录部署到你的服务器
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "public/"       # 注意：这里必须指定为 public/
+          REMOTE_HOST: ${{ secrets.SERVER_IP }}
+          REMOTE_USER: ${{ secrets.SERVER_USER }}
+          TARGET: "/home/blog" # 对应你 Nginx 配置中的 root 路径
+          EXCLUDE: "/.git/, /.github/"
