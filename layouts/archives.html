@@ -41,7 +41,7 @@
                     {{ $tagCount := len $taxonomy.Pages }}
                     {{ $color := partial "helper/color-from-str" $name }}
                     <a href="{{ "/tags/" | relURL }}{{ $name | urlize }}" style="background-color: {{ $color.BackgroundColor | safeCSS }}; color: {{ $color.TextColor | safeCSS }};">
-                        {{ $name }}<span class="tagCloud-count">{{ $tagCount }}</span>
+                        {{ $name }}<span class="tagCloud-count"> [{{ $tagCount }}]</span>
                     </a>
                 {{ end }}
             {{ end }}
