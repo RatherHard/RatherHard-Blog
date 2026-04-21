@@ -2,6 +2,29 @@
     You can add your own custom styles here.
 */
 
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--body-background);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(100, 140, 255, 0.55);
+    border-radius: 4px;
+
+    &:hover {
+        background: rgba(100, 140, 255, 0.75);
+    }
+}
+
+html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 140, 255, 0.55) var(--body-background);
+}
+
 .main {
     // 增加底部的留白，让页面看起来更从容
     padding-bottom: 3rem; 
