@@ -1,0 +1,3 @@
+## RatherHard の Blog
+
+OwO?!
