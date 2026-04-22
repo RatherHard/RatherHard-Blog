@@ -100,7 +100,7 @@
 */
 :root {
     --blockquote-border-size: 4px;
-    --blockquote-background-color: rgb(248 248 248);
+    --blockquote-background-color: rgba(200, 231, 233, var(--card-opacity));
 
     --heading-border-size: 4px;
 
@@ -122,19 +122,19 @@
     --code-background-color: rgb(203, 233, 237);
     --code-text-color: #2d53bd;
 
-    --table-border-color: #dadada;
-    --tr-even-background-color: #efefee;
+    --table-border-color: #898989;
+    --tr-even-background-color: rgba(237, 253, 252, var(--card-opacity));
 
     --kbd-border-color: #dadada;
 
     &[data-scheme="dark"] {
-        --code-background-color: rgb(70, 84, 108);
+        --code-background-color: rgb(94, 105, 125);
         --code-text-color: rgba(197, 238, 245, 0.9);
 
         --table-border-color: #717171;
-        --tr-even-background-color: #545454;
+        --tr-even-background-color: rgba(58, 67, 81, var(--card-opacity));
 
-        --blockquote-background-color: rgb(75 75 75);
+        --blockquote-background-color: rgba(67, 85, 98, var(--card-opacity));
     }
 }
 
