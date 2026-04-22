@@ -4,15 +4,10 @@ mainSections = ["post"]
 rssFullContent = true
 favicon        = "https://pic.ratherhard.com/avatar/avatar1.jpg"
 
-enableGitInfo = true
-
 # Accepted values: "default", "lastmod"
 # default = see https://gohugo.io/quick-reference/glossary/#default-sort-order
 # lastmod = sort by last modified date, in descending order
 SortBy              = "default"
-
-[frontmatter]
-    lastmod = ["lastmod", ":fileModTime", ":git", "publishDate"]
 
 [footer]
     since      = 2025
