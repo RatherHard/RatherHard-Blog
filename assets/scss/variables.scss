@@ -119,8 +119,8 @@
     --link-background-opacity: 0.5;
     --link-background-opacity-hover: 0.7;
 
-    --code-background-color: rgba(0, 0, 0, calc(0.12 * var(--card-opacity)));
-    --code-text-color: #808080;
+    --code-background-color: rgb(203, 233, 237);
+    --code-text-color: #2d53bd;
 
     --table-border-color: #dadada;
     --tr-even-background-color: #efefee;
@@ -128,8 +128,8 @@
     --kbd-border-color: #dadada;
 
     &[data-scheme="dark"] {
-        --code-background-color: rgba(39, 40, 34, var(--card-opacity));
-        --code-text-color: rgba(255, 255, 255, 0.9);
+        --code-background-color: rgb(70, 84, 108);
+        --code-text-color: rgba(197, 238, 245, 0.9);
 
         --table-border-color: #717171;
         --tr-even-background-color: #545454;
