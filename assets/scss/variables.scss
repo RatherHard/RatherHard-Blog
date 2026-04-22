@@ -22,7 +22,8 @@
 
     &[data-scheme="dark"] {
         --body-background: #0f1017;
-        --card-background: rgba(30, 45, 68, var(--card-opacity));        --accent-color: #ecf0f1;
+        --card-background: rgba(30, 45, 68, var(--card-opacity));
+        --accent-color: #ecf0f1;
         --accent-color-darker: #bdc3c7;
         --accent-color-text: #000;
         --body-text-color: rgba(255, 255, 255, 0.7);
@@ -118,7 +119,7 @@
     --link-background-opacity: 0.5;
     --link-background-opacity-hover: 0.7;
 
-    --code-background-color: rgba(0, 0, 0, 0.12);
+    --code-background-color: rgba(0, 0, 0, calc(0.12 * var(--card-opacity)));
     --code-text-color: #808080;
 
     --table-border-color: #dadada;
@@ -127,7 +128,7 @@
     --kbd-border-color: #dadada;
 
     &[data-scheme="dark"] {
-        --code-background-color: #272822;
+        --code-background-color: rgba(39, 40, 34, var(--card-opacity));
         --code-text-color: rgba(255, 255, 255, 0.9);
 
         --table-border-color: #717171;
@@ -153,13 +154,15 @@
 
 [data-scheme="light"] {
     --pre-text-color: #272822;
-    --pre-background-color: #fafafa;
+    --pre-background-color: rgba(250, 250, 250, var(--card-opacity));
+    --pre-text-background-color: rgba(250, 250, 250, var(--card-opacity) * var(--card-opacity));
     @import "partials/highlight/light.scss";
 }
 
 [data-scheme="dark"] {
     --pre-text-color: #f8f8f2;
-    --pre-background-color: #272822;
+    --pre-background-color: rgba(39, 40, 34, var(--card-opacity));
+    --pre-text-background-color: rgba(39, 40, 34, var(--card-opacity) * var(--card-opacity));
     @import "partials/highlight/dark.scss";
 }
 

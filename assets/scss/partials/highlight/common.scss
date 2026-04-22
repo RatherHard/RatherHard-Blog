@@ -1,7 +1,7 @@
 /* Background */
 .chroma {
     color: $color;
-    background-color: $background-color;
+    background-color: var(--pre-text-background-color);
 }
 
 /* Other */

@@ -3,7 +3,7 @@ footer.site-footer {
     font-size: 1.26rem;
     line-height: 1.62;
     color: rgba(46, 63, 85, 0.92);
-    background: linear-gradient(135deg, rgba(250, 253, 255, 0.88), rgba(231, 239, 248, 0.78));
+    background: linear-gradient(135deg, rgba(250, 253, 255, var(--card-opacity)), rgba(231, 239, 248, var(--card-opacity)));
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border-radius: var(--card-border-radius);
@@ -24,7 +24,7 @@ footer.site-footer {
 [data-scheme="dark"] {
     footer.site-footer {
         color: rgba(233, 239, 247, 0.94);
-        background: linear-gradient(135deg, rgba(32, 37, 45, 0.94), rgba(28, 33, 40, 0.88));
+        background: linear-gradient(135deg, rgba(32, 37, 45, var(--card-opacity)), rgba(28, 33, 40, var(--card-opacity)));
         border-color: rgba(147, 167, 196, 0.16);
         box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
     }
