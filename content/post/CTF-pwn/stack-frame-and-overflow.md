@@ -4,7 +4,7 @@ date: 2025-10-27 16:07:00
 tags: 
     - stack
     - pwn
-categories: 基础知识
+categories: pwn 基础
 ---
 # 栈帧
 

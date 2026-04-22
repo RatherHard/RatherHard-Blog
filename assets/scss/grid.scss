@@ -33,7 +33,7 @@
         }
 
         @include respond(xl) {
-            max-width: 1736px;
+            max-width: 1600px;
             --left-sidebar-max-width: 15%;
             --right-sidebar-max-width: 25%;
         }

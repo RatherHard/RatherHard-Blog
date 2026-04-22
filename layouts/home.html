@@ -3,7 +3,7 @@
 {{ define "main" }}
     <div class="home-terminal">
         <div class="home-terminal__body">
-            <span class="home-terminal__prompt">RatherHard$&nbsp;</span><span class="home-terminal__text" id="terminal-text"></span><span class="home-terminal__cursor">|</span>
+            <span class="home-terminal__prompt">RatherHard$&nbsp;</span><div class="home-terminal__scroll" id="terminal-scroll"><span class="home-terminal__text" id="terminal-text"></span><span class="home-terminal__cursor">|</span></div>
         </div>
     </div>
 
@@ -11,6 +11,7 @@
     (function() {
         const prompts = {{ .Site.Params.homeTerminal.prompts }};
         const el = document.getElementById('terminal-text');
+        const scrollEl = document.getElementById('terminal-scroll');
         let current = '';
         let charIndex = 0;
         let isDeleting = false;
@@ -28,6 +29,7 @@
             if (!isDeleting) {
                 charIndex++;
                 el.textContent = current.slice(0, charIndex);
+                scrollEl.scrollLeft = scrollEl.scrollWidth;
                 if (charIndex >= current.length) {
                     isDeleting = true;
                     timeoutId = setTimeout(tick, 2000);
@@ -37,6 +39,7 @@
             } else {
                 charIndex--;
                 el.textContent = current.slice(0, charIndex);
+                scrollEl.scrollLeft = scrollEl.scrollWidth;
                 if (charIndex <= 0) {
                     isDeleting = false;
                     current = pickRandom();

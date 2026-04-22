@@ -1,5 +1,5 @@
 ---
-title: CCSSSC-2026 题解
+title: CCSSSC-2026-pwn 题解
 date: 2026-03-25 14:04:00
 tags: 
     - pwn

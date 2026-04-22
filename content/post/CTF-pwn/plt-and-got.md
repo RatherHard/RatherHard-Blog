@@ -4,7 +4,7 @@ date: 2025-12-29 14:29:00
 tags: 
     - elf
     - pwn
-categories: 基础知识
+categories: pwn 基础
 ---
 在 Linux ELF 文件和动态链接机制中，这四个段（Section）共同协作，实现了**位置无关代码（PIC）**和**延迟绑定（Lazy Binding）**。
 
