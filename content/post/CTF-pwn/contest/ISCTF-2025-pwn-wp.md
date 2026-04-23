@@ -5,6 +5,9 @@ tags:
     - pwn
     - ISCTF2025
     - WriteUp
+    - 整数溢出
+    - 格式化字符串
+    - stack
 categories: Contest
 ---
 ## sign

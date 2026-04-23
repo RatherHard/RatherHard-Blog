@@ -2,8 +2,8 @@
 title: BUUCTF-NewStarCTF-ret2csu1 题解
 date: 2026-01-12 11:10:00
 tags: 
-    - ret2csu
     - pwn
+    - stack
     - BUUCTF
 categories: BUUCTF 题解
 ---

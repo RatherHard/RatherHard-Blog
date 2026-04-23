@@ -2,7 +2,7 @@
 title: NSSCTF-HNCTF-2022-ret2shellcode_level2 题解
 date: 2026-02-06 20:18:00
 tags: 
-    - shellcode
+    - shellcode 技巧
     - 侧信道爆破
     - pwn
     - NSSCTF

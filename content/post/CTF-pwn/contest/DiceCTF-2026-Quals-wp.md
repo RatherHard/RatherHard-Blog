@@ -5,6 +5,9 @@ tags:
     - pwn
     - DiceCTF2026Quals
     - WriteUp
+    - rust pwn
+    - 数组越界
+    - stack
 categories: Contest
 ---
 ## bytecrusher

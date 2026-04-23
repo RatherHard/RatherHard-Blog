@@ -4,7 +4,7 @@ date: 2026-01-16 21:49:00
 tags: 
     - heap
     - UAF
-    - tcache attack
+    - tcache poisoning
     - pwn
     - BUUCTF
 categories: BUUCTF 题解

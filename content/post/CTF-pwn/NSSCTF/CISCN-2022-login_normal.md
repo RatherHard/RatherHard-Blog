@@ -2,7 +2,7 @@
 title: NSSCTF-CISCN-2022-login_normal 题解
 date: 2026-02-11 21:12:00
 tags: 
-    - shellcode
+    - shellcode 技巧
     - pwn
     - NSSCTF
 categories: NSSCTF 题解

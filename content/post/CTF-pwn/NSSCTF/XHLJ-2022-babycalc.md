@@ -3,7 +3,7 @@ title: NSSCTF-西湖论剑-2022-babycalc 题解
 date: 2026-02-25 03:26:00
 tags: 
     - 栈迁移
-    - ret2libc
+    - stack
     - pwn
     - NSSCTF
 categories: NSSCTF 题解

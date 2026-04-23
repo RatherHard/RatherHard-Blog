@@ -4,9 +4,8 @@ date: 2026-02-26 20:41:00
 tags: 
     - UAF
     - heap
-    - tcache attack
+    - tcache poisoning
     - srop
-    - setcontext
     - 栈迁移
     - orw
     - pwn

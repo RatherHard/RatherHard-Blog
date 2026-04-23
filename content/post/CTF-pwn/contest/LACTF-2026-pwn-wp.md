@@ -5,6 +5,15 @@ tags:
     - pwn
     - LACTF2026
     - WriteUp
+    - house of apple2
+    - IO_FILE
+    - heap
+    - tcache poisoning
+    - 数组越界
+    - stack
+    - 随机数预测
+    - 结构体复用
+    - 栈迁移
 categories: Contest
 ---
 ## tic-tac-no

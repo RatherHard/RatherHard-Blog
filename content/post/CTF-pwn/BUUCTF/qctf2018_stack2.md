@@ -2,7 +2,7 @@
 title: BUUCTF-qctf2018_stack2 题解
 date: 2026-01-12 09:58:00
 tags: 
-    - stack
+    - 数组越界
     - pwn
     - BUUCTF
 categories: BUUCTF 题解

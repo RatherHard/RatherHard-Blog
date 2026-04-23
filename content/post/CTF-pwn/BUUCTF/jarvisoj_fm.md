@@ -2,7 +2,7 @@
 title: BUUCTF-jarvisoj_fm 题解
 date: 2026-01-12 10:23:00
 tags: 
-    - format
+    - 格式化字符串
     - pwn
     - BUUCTF
 categories: BUUCTF 题解

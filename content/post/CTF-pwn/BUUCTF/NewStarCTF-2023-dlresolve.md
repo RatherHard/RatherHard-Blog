@@ -3,6 +3,8 @@ title: BUUCTF-NewStarCTF-2023-dlresolve 题解
 date: 2026-02-09 16:54:00
 tags: 
     - ret2dlresolve
+    - 栈迁移
+    - stack
     - pwn
     - BUUCTF
 categories: BUUCTF 题解

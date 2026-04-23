@@ -5,6 +5,9 @@ tags:
     - pwn
     - HGAME2026
     - WriteUp
+    - heap
+    - UAF
+    - stack
 categories: Contest
 ---
 ## Heap1sEz

@@ -5,6 +5,9 @@ tags:
     - pwn
     - N1Junior2026
     - WriteUp
+    - 栈迁移
+    - stack
+    - shellcode 技巧
 categories: Contest
 ---
 ## ez_canary

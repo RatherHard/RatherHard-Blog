@@ -8,7 +8,6 @@ tags:
     - IO_FILE
     - house of apple2
     - srop
-    - setcontext
     - 栈迁移
     - orw
     - pwn

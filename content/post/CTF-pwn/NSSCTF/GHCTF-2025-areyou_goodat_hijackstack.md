@@ -2,7 +2,7 @@
 title: NSSCTF-GHCTF-2025-真会布置栈吗？ 题解
 date: 2026-02-23 22:50:00
 tags: 
-    - ret2syscall
+    - stack
     - pwn
     - NSSCTF
 categories: NSSCTF 题解

@@ -4,6 +4,7 @@ date: 2026-01-12 11:40:00
 tags: 
     - orw
     - 栈迁移
+    - stack
     - pwn
     - BUUCTF
 categories: BUUCTF 题解

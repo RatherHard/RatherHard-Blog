@@ -5,6 +5,13 @@ tags:
     - pwn
     - CCSSSC2026
     - WriteUp
+    - heap
+    - house of apple2
+    - orw
+    - IO_FILE
+    - 数组越界
+    - off by one
+    - tcache poisoning
 categories: Contest
 ---
 # 初赛

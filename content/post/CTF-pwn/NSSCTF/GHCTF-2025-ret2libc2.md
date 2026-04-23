@@ -3,7 +3,7 @@ title: NSSCTF-GHCTF-2025-ret2libc2 题解
 date: 2026-02-25 00:21:00
 tags: 
     - 栈迁移
-    - ret2libc
+    - stack
     - onegadget
     - pwn
     - NSSCTF

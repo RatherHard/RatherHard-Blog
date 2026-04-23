@@ -4,6 +4,7 @@ date: 2026-01-12 09:32:00
 tags: 
     - 栈迁移
     - srop
+    - stack
     - pwn
     - BUUCTF
 categories: BUUCTF 题解
