@@ -96,6 +96,11 @@ CAT | r00tQWB QWXF\xff
 
 只能申请固定范围内的 largebin ，考察 largebin attack 技巧，而 edit_count 的限制让这题变得棘手
 
+> largebin attack
+> 令 largebin1->bk_nextsize = target - 0x20
+> 然后 free 一个小一点的 largebin2 进入同一个 bin 
+> 效果： target = largebin2
+
 由于程序无法正常退出，我们需要利用两次 largebin attack ：一次劫持 stderr 结构体指针，把它覆盖成可控堆地址再在可控堆地址上写 fake IO_FILE 结构体；另一次利用错位篡改 topsize 为一个较小值，这样可以触发 sysmalloc 中的一个 __malloc_assert ，从而执行 fake stderr 中 house of apple2 流程。这两次攻击会耗尽 edit_count
 
 在阅读 largebin 相关源码时我们注意到，一个 chunk 从 unsortedbin 转移到 largebin 时，如果它是最小的，那么就会触发 largebin attack 的核心流程：
