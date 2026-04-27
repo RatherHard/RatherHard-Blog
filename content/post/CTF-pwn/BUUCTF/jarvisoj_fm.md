@@ -5,7 +5,7 @@ tags:
     - 格式化字符串
     - pwn
     - BUUCTF
-categories: BUUCTF 题解
+categories: pwn 题解
 ---
 ### 题目
 

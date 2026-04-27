@@ -7,7 +7,7 @@ tags:
     - tcache poisoning
     - pwn
     - BUUCTF
-categories: BUUCTF 题解
+categories: pwn 题解
 ---
 ### 题目
 

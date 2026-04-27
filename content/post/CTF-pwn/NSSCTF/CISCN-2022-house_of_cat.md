@@ -12,7 +12,7 @@ tags:
     - orw
     - pwn
     - NSSCTF
-categories: NSSCTF 题解
+categories: pwn 题解
 ---
 ### 题目
 
@@ -140,11 +140,17 @@ _IO_wfile_overflow ---> _IO_wdoallocbuf ---> _IO_WDOALLOCATE --->
 这里给出 roderick 大佬的 house of apple2 的构造方式：
 
 `_flags` 设置为 `~(2 | 0x8 | 0x800)` ，如果不需要控制 rdi ，设置为 0 即可；
+
 `vtable` 设置为 `_IO_wfile_jumps/_IO_wfile_jumps_mmap/_IO_wfile_jumps_maybe_mmap` 地址（加减偏移），使其能成功调用 _IO_wfile_overflow 即可；
+
 `_wide_data` 设置为可控堆地址 A ，即满足 `*(fp + 0xa0) = A`
+
 `_wide_data->_IO_write_base` 设置为 0 ，即满足 `*(A + 0x18) = 0`
+
 `_wide_data->_IO_buf_base` 设置为 0 ，即满足 `*(A + 0x30) = 0`
+
 `_wide_data->_wide_vtable` 设置为可控堆地址 B ，即满足 `*(A + 0xe0) = B`
+
 `_wide_data->_wide_vtable->doallocate` 设置为地址 C 用于劫持 RIP，即满足 `*(B + 0x68) = C`
 
 对于本题，还应：

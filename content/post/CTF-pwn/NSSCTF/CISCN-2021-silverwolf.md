@@ -10,7 +10,7 @@ tags:
     - orw
     - pwn
     - NSSCTF
-categories: NSSCTF 题解
+categories: pwn 题解
 ---
 ### 题目
 

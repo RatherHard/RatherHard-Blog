@@ -5,7 +5,7 @@ tags:
     - 函数指针
     - pwn
     - BUUCTF
-categories: BUUCTF 题解
+categories: pwn 题解
 ---
 ### 题目
 
